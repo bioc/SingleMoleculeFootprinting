@@ -5,61 +5,57 @@
 \title{Plot SMF data at single site}
 \usage{
 PlotSingleSiteSMF(
-  ContextMethylation,
-  sample,
-  range,
+  Methylation,
+  RegionOfInterest,
+  ShowContext = FALSE,
+  TFBSs = NULL,
+  SNPs = NULL,
+  SortingBins = NULL,
   SortedReads = NULL,
-  TFBSs,
-  saveAs = NULL
+  sorting.strategy = "None"
 )
 }
 \arguments{
-\item{ContextMethylation}{Context methylation object as returned by CallContextMethylation function}
+\item{Methylation}{Context methylation object as returned by CallContextMethylation function}
 
-\item{sample}{one sample as reported in the SampleName files of the QuasR sampleSheet}
+\item{RegionOfInterest}{GRanges interval to plot}
 
-\item{range}{GRange interval to plot}
+\item{ShowContext}{TRUE or FALSE (default). Causes the genomic context of the plotted cytosines to be displayed as the dot shape}
+
+\item{TFBSs}{GRanges object of transcription factor binding sites to include in the plot. Assumed to be already subset. Also assumed that the tf names are under the column "TF"}
+
+\item{SNPs}{GRanges object of SNPs to visualize. Assumed to be already subset. Assumed to have the reference and alternative sequences respectively under the columns "R" and "A"}
+
+\item{SortingBins}{GRanges object of sorting bins (absolute) coordinate to visualize}
 
 \item{SortedReads}{Defaults to NULL, in which case will plot unsorted reads. Sorted reads object as returned by SortReads function or "HC" to perform hierarchical clustering}
 
-\item{TFBSs}{GRange or GRangesList of transcription factor binding sites to add to the plot. If SortedReads are passed, the format of TFBSs (GRanges vs GRangesList) will be used to determie if single molecules were sorted based on one or multiple TFs}
-
-\item{saveAs}{Full path to pdf file to save plot to. Defaults to NULL, in which case will only display}
-}
-\value{
-Single site plot including average SMF signal, single molecules stack and state quantification plot
+\item{sorting.strategy}{One of "classical" (default), "custom", "hierarchical.clustering" or "None". Determines how to display reads. For details check documentation from PlotSM function.}
 }
 \description{
 Plot SMF data at single site
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+Methylation = CallContextMethylation(sampleSheet = Qinput,
                                      sample = MySample,
                                      genome = BSgenome.Mmusculus.UCSC.mm10,
                                      range = Region_of_interest,
                                      coverage = 20,
                                      ConvRate.thr = 0.2)
+TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
+elementMetadata(TFBSs)$name = c("NRF1")
+names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
 
-    TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-    elementMetadata(TFBSs)$name = c("NRF1")
-    names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-    SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
-
-    PlotSingleSiteSMF(ContextMethylation = Methylation,
-                      sample = MySample,
-                      range = Region_of_interest,
-                      SortedReads = SortedReads,
-                      TFBSs = TFBSs,
-                      saveAs = NULL)
-}
+PlotSingleSiteSMF(ContextMethylation = Methylation,
+                  sample = MySample,
+                  range = Region_of_interest,
+                  SortedReads = SortedReads,
+                  TFBSs = TFBSs,
+                  saveAs = NULL)
 
 }

@@ -4,43 +4,52 @@
 \alias{PlotAvgSMF}
 \title{Plot average methylation}
 \usage{
-PlotAvgSMF(MethGR, range, TFBSs)
+PlotAvgSMF(
+  MethGR,
+  MethSM = NULL,
+  RegionOfInterest,
+  SortedReads = NULL,
+  ShowContext = FALSE,
+  TFBSs = NULL,
+  SNPs = NULL,
+  SortingBins = NULL
+)
 }
 \arguments{
 \item{MethGR}{Average methylation GRanges obj}
 
-\item{range}{GRanges interval to plot}
+\item{MethSM}{Single molecule matrix(es)}
 
-\item{TFBSs}{GRanges object of transcription factor binding sites to include in the plot. Assumed to be already subset.}
-}
-\value{
-Average SMF signal at single site
+\item{RegionOfInterest}{GRanges interval to plot}
+
+\item{SortedReads}{List of sorted reads, needs to be passed along with the parameter MethSM. If both are passed, only counts relevant to sorting will be plotted}
+
+\item{ShowContext}{TRUE or FALSE (default). Causes the genomic context of the plotted cytosines to be displayed as the dot shape}
+
+\item{TFBSs}{GRanges object of transcription factor binding sites to include in the plot. Assumed to be already subset. Also assumed that the tf names are under the column "TF"}
+
+\item{SNPs}{GRanges object of SNPs to visualize. Assumed to be already subset. Assumed to have the reference and alternative sequences respectively under the columns "R" and "A"}
+
+\item{SortingBins}{GRanges object of sorting bins (absolute) coordinate to visualize}
 }
 \description{
 Plot average methylation
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+Methylation = CallContextMethylation(sampleSheet = Qinput,
                                      sample = MySample,
                                      genome = BSgenome.Mmusculus.UCSC.mm10,
                                      range = Region_of_interest,
                                      coverage = 20,
                                      ConvRate.thr = 0.2)
+TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
+elementMetadata(TFBSs)$name = c("NRF1")
+names(TFBSs) = c(paste0("TFBS_", c(4305216)))
 
-    TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-    elementMetadata(TFBSs)$name = c("NRF1")
-    names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-
-    PlotAvgSMF(MethGR = Methylation[[1]], range = Region_of_interest, TFBSs = TFBSs)
-}
+PlotAvgSMF(MethGR = Methylation[[1]], Region_of_interest = Region_of_interest, TFBSs = TFBSs)
 
 }

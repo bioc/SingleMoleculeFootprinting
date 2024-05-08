@@ -4,16 +4,28 @@
 \alias{PlotSingleMoleculeStack}
 \title{Plot single molecule stack}
 \usage{
-PlotSingleMoleculeStack(MethSM, range)
+PlotSingleMoleculeStack(MethSM, RegionOfInterest)
 }
 \arguments{
 \item{MethSM}{Single molecule methylation matrix}
 
-\item{range}{GRanges interval to plot}
-}
-\value{
-Single molecule plot
+\item{RegionOfInterest}{GRanges interval to plot}
 }
 \description{
 Plot single molecule stack
+}
+\examples{
+
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+Methylation = CallContextMethylation(sampleSheet = Qinput,
+                                     sample = MySample,
+                                     genome = BSgenome.Mmusculus.UCSC.mm10,
+                                     range = Region_of_interest,
+                                     coverage = 20,
+                                     ConvRate.thr = 0.2)
+
+PlotSingleMoleculeStack(MethSM = Methylation[[2]], RegionOfInterest = Region_of_interest)
+
 }

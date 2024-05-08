@@ -4,39 +4,42 @@
 \alias{PlotSM}
 \title{Wrapper for PlotSingleMoleculeStack function}
 \usage{
-PlotSM(MethSM, range, SortedReads = NULL)
+PlotSM(
+  MethSM,
+  RegionOfInterest,
+  sorting.strategy = "classical",
+  SortedReads = NULL
+)
 }
 \arguments{
 \item{MethSM}{Single molecule methylation matrix}
 
-\item{range}{GRanges interval to plot}
+\item{RegionOfInterest}{GRanges interval to plot}
 
-\item{SortedReads}{Defaults to NULL, in which case will plot unsorted reads. Sorted reads object as returned by SortReads function or "HC" to perform hierarchical clustering}
-}
-\value{
-Single molecule stack plot
+\item{sorting.strategy}{One of "classical" (default), "custom", "hierarchical.clustering" or "None".
+Set to "classical" for classical one-TF/TF-pair sorting (as described in Sönmezer et al, MolCell, 2021). Should be passed along with argument SortedReads set to the Sorted reads object as returned by SortReads function.
+If set to "custom", SortedReads should be a list with one item per sample (corresponding to MethSM).
+If set to "hierarchical.clustering", the function will perform hierarchical clustering in place on a subset of reads. Useful to check for duplicated reads in amplicon sequencing experiments.
+If set to "None", it will plot unsorted reads.
+The argument sorting,strategy will always determine how to display reads with priority over the argument SortedReads}
+
+\item{SortedReads}{Defaults to NULL, in which case will plot unsorted reads. Sorted reads object as returned by SortReads function}
 }
 \description{
 adds the convenience of arranging reads before plotting
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+Methylation = CallContextMethylation(sampleSheet = Qinput,
                                      sample = MySample,
                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-                                     range = Region_of_interest,
+                                     RegionOfInterest = Region_of_interest,
                                      coverage = 20,
                                      ConvRate.thr = 0.2)
 
-    PlotSM(MethSM = Methylation[[2]], range = Region_of_interest)
-}
+ PlotSM(MethSM = Methylation[[2]], RegionOfInterest = Region_of_interest)
 
 }

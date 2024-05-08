@@ -1,6 +1,6 @@
 Package: SingleMoleculeFootprinting
 Title: Analysis tools for Single Molecule Footprinting (SMF) data
-Version: 1.13.0
+Version: 1.99.0
 Authors@R: c(
     person(given = "Guido",
            family = "Barzaghi",
@@ -20,19 +20,29 @@ Authors@R: c(
     )
 Depends:
   R (>= 4.1.0)
-Imports: 
+Imports:
     BiocGenerics,
     Biostrings,
     BSgenome,
+    dplyr,
     GenomeInfoDb,
     GenomicRanges,
-    data.table,
+    ggplot2,
     grDevices,
-    plyr,
     IRanges,
+    Matrix,
+    parallel,
+    patchwork,
+    plyr,
+    plyranges,
+	QuasR,
     RColorBrewer,
+    S4Vectors,
     stats,
-    QuasR
+    tibble,
+    tidyr,
+    tidyverse,
+	viridis
 Description: SingleMoleculeFootprinting is an R package providing functions 
     to analyze Single Molecule Footprinting (SMF) data. 
     Following the workflow exemplified in its vignette, 
@@ -45,7 +55,7 @@ Description: SingleMoleculeFootprinting is an R package providing functions
     classify single molecules based on their patterns of molecular occupancy,
     plot SMF information at a given genomic location
 biocViews: 
-  DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl
+	DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl, Sequencing
 BugReports: https://github.com/Krebslabrep/SingleMoleculeFootprinting/issues
 License: GPL-3
 Encoding: UTF-8
@@ -60,5 +70,5 @@ Suggests:
     SingleMoleculeFootprintingData,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Config/testthat/edition: 3

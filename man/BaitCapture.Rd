@@ -11,7 +11,7 @@ BaitCapture(sampleSheet, genome, baits, clObj = NULL)
 
 \item{genome}{BS genome}
 
-\item{baits}{Full path to bed file containing bait coordinates. If chromosome names are in e.g. "1" format, they'll be temporarily converted to "chr1"}
+\item{baits}{GRanges obj of bait coordinates. We provide and example through SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()}
 
 \item{clObj}{cluster object to emply for parallel processing created using the parallel::makeCluster function. Defaults to NULL}
 }

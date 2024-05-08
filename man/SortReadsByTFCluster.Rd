@@ -4,12 +4,24 @@
 \alias{SortReadsByTFCluster}
 \title{Wrapper to SortReads for TF cluster case}
 \usage{
-SortReadsByTFCluster(MethSM, TFBSs)
+SortReadsByTFCluster(
+  MethSM,
+  TFBS_cluster,
+  bins = list(c(-35, -25), c(-7, 7), c(25, 35)),
+  coverage = 30
+)
 }
 \arguments{
-\item{MethSM}{Single molecule matrix}
+\item{MethSM}{Single molecule matrix list as returned by CallContextMethylation}
 
-\item{TFBSs}{Transcription factor binding sites to use for sorting, passed as a GRanges object of length > 1}
+\item{TFBS_cluster}{Transcription factor binding sites to use for sorting, passed as a GRanges object of length > 1}
+
+\item{bins}{list of 3 relative bin coordinates. Defaults to list(c(-35,-25), c(-7,7), c(25,35)).
+bins[[1]] represents the upstream bin, with coordinates relative to the start of the most upstream TFBS.
+bins[[2]] represents all the TFBS bins, with coordinates relative to the center of each TFBS.
+bins[[3]] represents the downstream bin, with coordinates relative to the end of the most downstream TFBS.}
+
+\item{coverage}{integer. Minimum number of reads covering all sorting bins for sorting to be performed. Defaults to 30}
 }
 \value{
 List of reads sorted by TF cluster
@@ -18,27 +30,11 @@ List of reads sorted by TF cluster
 Wrapper to SortReads for TF cluster case
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106216, 88106253), c(88106226, 88106263)), strand = "-")
+elementMetadata(TFBSs)$name = c("NRF1", "NRF1")
+names(TFBSs) = c(paste0("TFBS_", c(4305215, 4305216)))
 
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
-                                     sample = MySample,
-                                     genome = BSgenome.Mmusculus.UCSC.mm10,
-                                     range = Region_of_interest,
-                                     coverage = 20,
-                                     ConvRate.thr = 0.2)
-
-    TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-    elementMetadata(TFBSs)$name = c("NRF1")
-    names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-
-    SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
-}
+SortedReads = SortReadsByTFCluster(MethSM = MethSM, TFBSs = TFBS_cluster)
 
 }

@@ -4,14 +4,12 @@
 \alias{BinMethylation}
 \title{Summarize methylation inside sorting bins}
 \usage{
-BinMethylation(MethSM, TFBS, bin)
+BinMethylation(MethSM, Bin)
 }
 \arguments{
 \item{MethSM}{Single molecule matrix}
 
-\item{TFBS}{Transcription factor binding site to use for sorting, passed as a GRanges object of length 1}
-
-\item{bin}{vector of two integers representing the coordinate of a bin relative to the center of the TFBS}
+\item{Bin}{IRanges object with absolute coordinates for single sorting bin.}
 }
 \value{
 Reads covering bin with their summarized methylation status
@@ -20,27 +18,15 @@ Reads covering bin with their summarized methylation status
 Summarize methylation inside sorting bins
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
+elementMetadata(TFBSs)$name = c("NRF1")
+names(TFBSs) = c(paste0("TFBS_", c(4305216)))
 
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+TFBS_center = start(TFBS) + (end(TFBS)-start(TFBS))/2
+BinsCoordinates = IRanges(start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
+                          end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2]))
 
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
-                                     sample = MySample,
-                                     genome = BSgenome.Mmusculus.UCSC.mm10,
-                                     range = Region_of_interest,
-                                     coverage = 20,
-                                     ConvRate.thr = 0.2)
-
-    TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-    elementMetadata(TFBSs)$name = c("NRF1")
-    names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-
-    binMethylationValues = BinMethylation(MethSM = Methylation[[2]], TFBS = TFBSs, bin = c(-15,15))
-}
+binMethylationValues = BinMethylation(MethSM = MethSM, Bin = BinsCoordinates[1])
 
 }

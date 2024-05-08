@@ -4,7 +4,7 @@
 \alias{SampleCorrelation}
 \title{Intersample correlation}
 \usage{
-SampleCorrelation(samples, context, CellType)
+SampleCorrelation(samples, context, CellType, saveAs = NULL)
 }
 \arguments{
 \item{samples}{Avg methylation object. Can also be set to "Example" to produce plot using example data of the kind specified by the @param CellType}
@@ -12,9 +12,12 @@ SampleCorrelation(samples, context, CellType)
 \item{context}{one of "AllCs", "DGCHN", "NWCGW". The first should be chosen for TKO experiments. For experiments carried on WT cells, we recommend checking both the "DGCHN" and "NWCGW" contexts by running this function once per context.}
 
 \item{CellType}{Cell type to compare your samples to. At the moment, this can be one of "ES", "NP", "TKO".}
-}
-\value{
-Inter-sample correlation plot
+
+\item{saveAs}{Full path to output plot file
+
+# export
+
+# examples}
 }
 \description{
 pair plot of sample correlations

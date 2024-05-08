@@ -14,22 +14,18 @@ GetSingleMolMethMat(QuasRprj, range, sample)
 \item{sample}{One of the sample names as reported in the SampleName field of the QuasR pointer file provided to qAlign. N.b. all the files with the passed sample name will be used to call methylation}
 }
 \value{
-Single molecule methylation matrix (all Cytosines)
+List of single molecule methylation matrixes (all Cytosines), one per sample
 }
 \description{
 Used internally as the first step in CallContextMethylation
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+sample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+range = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
 
-    sample = readr::read_delim(Qinput, delim = "\t")$SampleName
-    range = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    MethSM = GetSingleMolMethMat(QuasRprj, range, sample)
-}
+MethSM = GetSingleMolMethMat(QuasRprj, range, sample)
 
 }

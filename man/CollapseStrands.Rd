@@ -4,14 +4,12 @@
 \alias{CollapseStrands}
 \title{Collapse strands}
 \usage{
-CollapseStrands(MethGR, context, verbose = TRUE)
+CollapseStrands(MethGR, context)
 }
 \arguments{
 \item{MethGR}{Granges obj of average methylation}
 
-\item{context}{"GC" or "CG". Broad because indicates just the directionality of collapse.}
-
-\item{verbose}{TRUE/FALSE}
+\item{context}{"GC" or "HCG". Broad because indicates just the directionality of collapse.}
 }
 \value{
 MethGR with collapsed strands (everything turned to - strand)

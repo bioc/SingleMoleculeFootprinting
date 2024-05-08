@@ -4,7 +4,7 @@
 \alias{ConversionRate}
 \title{Conversion rate}
 \usage{
-ConversionRate(sampleSheet, genome, chr = 19, clObj = NULL)
+ConversionRate(sampleSheet, genome, chr = 19, cores = 1)
 }
 \arguments{
 \item{sampleSheet}{QuasR sample sheet}
@@ -13,23 +13,15 @@ ConversionRate(sampleSheet, genome, chr = 19, clObj = NULL)
 
 \item{chr}{chromosome to calculate conversion rate on (default: 19)}
 
-\item{clObj}{cluster object to emply for parallel processing created using the parallel::makeCluster function. Defaults to NULL}
-}
-\value{
-Conversion rate
+\item{cores}{number of cores for parallel processing. Defaults to 1}
 }
 \description{
 calculate sequencing library conversion rate on a chromosome of choice
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    # DO NOT RUN
-    # clObj = parallel::makeCluster(5)
-    # ConversionRatePrecision = ConversionRate(sampleSheet = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, clObj = clObj)
-    # parallel::stopCluster(clObj)
-}
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+
+ConversionRatePrecision = ConversionRate(sampleSheet = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
 
 }

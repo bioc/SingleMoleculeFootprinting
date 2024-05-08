@@ -4,16 +4,14 @@
 \alias{SortReads}
 \title{Sort reads by single TF}
 \usage{
-SortReads(MethSM, TFBS, BinsCoord, SortByCluster)
+SortReads(MethSM, BinsCoordinates, coverage = NULL)
 }
 \arguments{
 \item{MethSM}{Single molecule matrix}
 
-\item{TFBS}{Transcription factor binding site to use for sorting}
+\item{BinsCoordinates}{IRanges object of absolute coordinates for sorting bins}
 
-\item{BinsCoord}{list of 3 bin coordinates relative to the center of the TFBS.}
-
-\item{SortByCluster}{T/F}
+\item{coverage}{integer. Minimum number of reads covering all sorting bins for sorting to be performed}
 }
 \value{
 list of sorted reads
@@ -22,28 +20,16 @@ list of sorted reads
 Sort reads by single TF
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+BinsCoord = list(c(-35,-25), c(-15,15), c(25,35))
+TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
+elementMetadata(TFBSs)$name = c("NRF1")
+names(TFBSs) = c(paste0("TFBS_", c(4305216)))
 
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+TFBS_center = start(TFBS) + (end(TFBS)-start(TFBS))/2
+BinsCoordinates = IRanges(start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
+                          end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2]))
 
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
-                                     sample = MySample,
-                                     genome = BSgenome.Mmusculus.UCSC.mm10,
-                                     range = Region_of_interest,
-                                     coverage = 20,
-                                     ConvRate.thr = 0.2)
-
-    TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-    elementMetadata(TFBSs)$name = c("NRF1")
-    names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-    BinsCoord = list(c(-35,-25), c(-15,15), c(25,35))
-
-    SortedReads = SortReads(Methylation[[2]], TFBSs, BinsCoord, SortByCluster = FALSE)
-}
+SortedReads = SortReads(MethSM, BinsCoordinates)
 
 }

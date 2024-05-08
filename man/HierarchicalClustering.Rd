@@ -9,9 +9,6 @@ HierarchicalClustering(MethSM)
 \arguments{
 \item{MethSM}{Single molecule methylation matrix}
 }
-\value{
-Single molecule matrix after hierarchical clustering
-}
 \description{
 Perform Hierarchical clustering on single reads
 }

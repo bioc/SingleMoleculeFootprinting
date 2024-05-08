@@ -8,10 +8,11 @@ CallContextMethylation(
   sampleSheet,
   sample,
   genome,
-  range,
+  RegionOfInterest,
   coverage = 20,
-  ConvRate.thr = 0.2,
-  verbose = TRUE
+  ConvRate.thr = 0.8,
+  returnSM = TRUE,
+  clObj = NULL
 )
 }
 \arguments{
@@ -21,13 +22,15 @@ CallContextMethylation(
 
 \item{genome}{BSgenome}
 
-\item{range}{GenimocRange representing the genomic region of interest}
+\item{RegionOfInterest}{GenimocRange representing the genomic region of interest}
 
-\item{coverage}{coverage threshold. Defaults to 20.}
+\item{coverage}{coverage threshold as integer for least number of reads to cover a cytosine for it to be carried over in the analysis. Defaults to 20.}
 
-\item{ConvRate.thr}{Convesion rate threshold. Double between 0 and 1, defaults to 0.2}
+\item{ConvRate.thr}{Convesion rate threshold. Double between 0 and 1, defaults to 0.8. To skip this filtering step, set to NULL. For more information, check out the details section.}
 
-\item{verbose}{TRUE/FALSE}
+\item{returnSM}{whether to return the single molecule matrix, defaults to TRUE}
+
+\item{clObj}{cluster object for parallel processing of multiple samples. For now only used by qMeth call for bulk methylation. Should be the output of a parallel::makeCluster() call}
 }
 \value{
 List with two Granges objects: average methylation call (GRanges) and single molecule methylation call (matrix)
@@ -35,22 +38,20 @@ List with two Granges objects: average methylation call (GRanges) and single mol
 \description{
 Can deal with multiple samples
 }
+\details{
+The ConvRate.thr argument should be used with care as it could create biases (e.g. when only one C out of context is present) while generally only marginally cleaning up the data.
+}
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
+MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
+Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
 
-    MySample = readr::read_delim(Qinput, delim = "\t")$SampleName[1]
-    Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-
-    Methylation = CallContextMethylation(sampleSheet = Qinput,
+Methylation = CallContextMethylation(sampleSheet = Qinput,
                                      sample = MySample,
                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-                                     range = Region_of_interest,
+                                     RegionOfInterest = Region_of_interest,
                                      coverage = 20,
                                      ConvRate.thr = 0.2)
-}
 
 }
