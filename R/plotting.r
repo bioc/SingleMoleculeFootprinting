@@ -1,37 +1,3 @@
-#' Perform Hierarchical clustering on single reads
-#'
-#' @param MethSM Single molecule methylation matrix
-#'
-#' @importFrom stats hclust
-#' @importFrom stats dist
-#'
-HierarchicalClustering = function(MethSM){
-
-  SubsetSize = 500
-  if(nrow(MethSM) > SubsetSize){ #subset to 500 molecules to avoid problem with Hc
-    MethSM_subset = MethSM[sample(dimnames(MethSM)[[1]],SubsetSize),]
-  }else{
-    SubsetSize = nrow(MethSM)
-    MethSM_subset = MethSM
-  }
-  ReadsDist = dist(MethSM_subset)
-  iteration = 0
-  while(sum(is.na(ReadsDist)) > 0){ # sometimes dist between some pair of reads is NA, possibly because of no overlapping Cs
-    iteration = iteration + 1
-    if (iteration > SubsetSize) {
-      SubsetSize = ceiling(SubsetSize*0.9)
-      iteration = 0
-    }
-    MethSM_subset = MethSM[sample(dimnames(MethSM)[[1]],SubsetSize),]
-    ReadsDist = dist(MethSM_subset)
-  }
-  hc=hclust(ReadsDist)
-  MethSM_HC = MethSM_subset[hc$order,]
-
-  return(MethSM_HC)
-
-}
-
 #' Plot average methylation
 #'
 #' @param MethGR Average methylation GRanges obj
@@ -86,7 +52,7 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
     if(length(MethSM) != length(SortedReads)){
       stop("Number of samples in MethSM and SortedReads do not correspond...quitting")
     }
-    # here I just recalculate MethRate and replace it in the PlottingDF
+    # here I recalculate MethRate and replace it in the PlottingDF
     # removing cytosines not covered by relevant reads
     # No need to take care of coverage again since we only care for counts over sorting bins,
     # and these reads are by definition covering bins enough
@@ -123,11 +89,6 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
       mutate(width = ifelse(max(nchar(R), nchar(A)) == 1, 3, max(nchar(R), nchar(A)))) %>%
       select(start, width) %>%
       mutate(y_coord = -0.13) -> SNPs_PlottingDF
-      # select(start, R, A) %>%
-      # gather(Genotype, Sequence, -start) %>%
-      # mutate(y_coord = rep(c(-0.10,-0.13), each=length(SNPs))) %>%
-      # add_row(start=min(start(SNPs))-40, Genotype = c("R", "A"),
-      #         Sequence =  c("Genotype:R", "Genotype:A"), y_coord = c(-0.10, -0.13)) -> SNPs_PlottingDF
   }
 
   # Prepare SortingBins
@@ -143,7 +104,6 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
     {if(ShowContext){geom_point(aes(shape=GenomicContext))}else{geom_point()}} +
     {if(!is.null(TFBSs)){geom_rect(TFBS_PlottingDF, mapping = aes(xmin=start, xmax=end, ymin=-0.09, ymax=-0.04), inherit.aes = FALSE)}} +
     {if(!is.null(TFBSs)){ggrepel::geom_text_repel(TFBS_PlottingDF, mapping = aes(x=start+((end-start)/2), y=-0.02, label=TF), min.segment.length = .1, max.overlaps = 1e+05, inherit.aes = FALSE)}} + #, size=4.5
-    # {if(!is.null(SNPs)){geom_text(SNPs_PlottingDF, mapping = aes(x=start, y=y_coord, label=Sequence), size=3, inherit.aes = FALSE)}} +
     {if(!is.null(SNPs)){geom_tile(SNPs_PlottingDF, mapping = aes(x=start, y=y_coord, width=width), color = ColorsToUse[2], fill = ColorsToUse[2], height = 0.05, inherit.aes = FALSE)}} +
     {if(!is.null(SortingBins)){geom_rect(Bins_PlottingDF, mapping = aes(xmin=start, xmax=end, ymin=-0.02, ymax=0), color="black", fill="white", inherit.aes = FALSE)}} +
     geom_hline(aes(yintercept=0)) +
@@ -197,8 +157,6 @@ PlotSingleMoleculeStack = function(MethSM, RegionOfInterest){
     na.omit() %>%
     mutate(Methylation = as.factor(Methylation), Coordinate = as.numeric(Coordinate)) -> PlottingDF
   PlottingDF$ReadID = factor(PlottingDF$ReadID, levels = Reduce(c, lapply(MethSM, rownames)))
-  # OurFavouriteColors = c("Black", "Red", "Blue", "Green")
-  # ColorsToUse = OurFavouriteColors[seq_along(unique(PlottingDF$Sample))] <------ WHAT DO I DO WITH YOU
   
   PlottingDF %>%
     group_by(Sample) %>%
@@ -315,51 +273,6 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
     
   #### 5.
   } else {stop("Invalid value for sorting.strategy")}
-  
-  # if (is.null(SortedReads) & is.null(sorting.strategy)){
-  #   
-  #   message("No sorting passed or specified, will plot unsorted reads")
-  #   
-  # } else if (is.list(SortedReads)){
-  #   
-  #   message("Sorting reads according to passed values before plotting")
-  #   PatternLength = unique(unlist(lapply(seq_along(SortedReads), function(i){unique(nchar(names(SortedReads[[i]])))})))
-  #   if (sorting.strategy == "classical" & PatternLength == 3){ # Single TF
-  #     message("Inferring sorting was performed by single TF")
-  #     NAMES = names(MethSM)
-  #     MethSM = lapply(seq_along(MethSM), function(i){
-  #       MethSM[[i]][unlist(SortedReads[[i]][rev(Reduce(c, OneTFstates()))]),]
-  #     })
-  #     names(MethSM) = NAMES
-  #   } else if (sorting.strategy == "classical" & PatternLength == 4){ # TF pair
-  #     message("Inferring sorting was performed by TF pair")
-  #     NAMES = names(MethSM)
-  #     MethSM = lapply(seq_along(MethSM), function(i){
-  #       MethSM[[i]][unlist(SortedReads[[i]][as.character(unlist(TFpairStates()))]),]
-  #     })
-  #     names(MethSM) = NAMES
-  #   } else if (sorting.strategy == "custom"){
-  #     message("Using custom sorting strategy")
-  #     NAMES = names(MethSM)
-  #     MethSM = lapply(seq_along(MethSM), function(i){
-  #       MethSM[[i]][unlist(SortedReads[[i]]),]
-  #     })
-  #     names(MethSM) = NAMES
-  #   } else {
-  #     message("Unrecognized sorting strategy ... plotting states in the order they appear")
-  #     NAMES = names(MethSM)
-  #     MethSM = lapply(seq_along(MethSM), function(i){
-  #       MethSM[[i]][unlist(SortedReads[[i]]),]
-  #     })
-  #     names(MethSM) = NAMES
-  #   }
-  #   
-  # } else if (SortedReads == "HC"){
-  #   
-  #   message("Perfoming hierarchical clustering on single molecules before plotting")
-  #   MethSM = lapply(MethSM, HierarchicalClustering)
-  #   
-  # }
   
   PlotSingleMoleculeStack(MethSM, RegionOfInterest)
 

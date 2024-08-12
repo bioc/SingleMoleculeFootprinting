@@ -1,0 +1,531 @@
+---
+title: "methylation_calling_and_QCs"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    highlight: tango
+vignette: >
+  %\VignetteIndexEntry{SingleMoleculeFootprinting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  # comment = "#>", 
+  tidy = FALSE, 
+  cache = FALSE, 
+  results = 'markup'
+)
+```
+
+## Introduction
+*SingleMoleculeFootprinting* is an R package for Single Molecule Footprinting (SMF) data.
+
+Starting from an aligned bam file, we show how to
+
+* perform sequencing QCs
+* call methylation in bulk and at single molecule level
+* perform single molecule TF sorting as per [Sönmezer et al., 2021](https://doi.org/10.1016/j.molcel.2020.11.015)
+* plot SMF
+* run genome-wide analyses
+* run FootprintCharter as per [Barzaghi & Baderna et al., 2024]()
+
+For installation, the user can use the following:
+```{r, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("SingleMoleculeFootprinting")
+```
+
+For compatibility with our analysis tools, we recommend the user to perform genomic alignments using the [`qAlign`](https://www.rdocumentation.org/packages/QuasR/versions/1.12.0/topics/qAlign) function from *QuasR* as exemplified in the chunk below.  
+For detailed pre-processing instructions we refer to steps 179 to 186 of [Kleinendorst & Barzaghi et al., 2021](https://doi.org/10.1038/s41596-021-00630-1)
+```{r, eval=FALSE}
+clObj <- makeCluster(40)
+prj <- QuasR::qAlign(
+  sampleFile = sampleFile,
+  genome = "BSgenome.Mmusculus.UCSC.mm10",
+  aligner = "Rbowtie",
+  projectName = "prj",
+  paired = "fr",
+  bisulfite = "undir",
+  alignmentParameter = "-e 70 -X 1000 -k 2 --best -strata",
+  alignmentsDir = "./", 
+  cacheDir = tempdir(),
+  clObj = clObj
+  )
+stopCluster(clObj)
+```
+
+## Loading libraries
+```{r setup, message=FALSE}
+suppressWarnings(library(SingleMoleculeFootprinting))
+suppressWarnings(library(SingleMoleculeFootprintingData))
+suppressWarnings(library(BSgenome.Mmusculus.UCSC.mm10))
+suppressWarnings(library(parallel))
+suppressWarnings(library(ggplot2))
+```
+
+## Prepare inputs
+*SingleMoleculeFootprinting* inherits *QuasR*'s `sampleFile` style of feeding *.bam* files. For instructions, refer to the `qAlign` [documentation](https://www.rdocumentation.org/packages/QuasR/versions/1.12.0/topics/qAlign). Here we show how our sampleFile looks like.  
+N.b.: This vignette and some functions of *SingleMoleculeFootprinting* depend on data available through the data package *SingleMoleculeFootprintingData*.  
+For user-friendliness, this data is fetched during the installation of *SingleMoleculeFootprinting* and stored in `tempdir()`.  
+Please make sure that `tempdir()` has enough storage capacity (~1 Gb). You can check this by running `ExperimentHub::getExperimentHubOption(arg = "CACHE")` and if needed change the location by running `ExperimentHub::setExperimentHubOption(arg = "CACHE", value = "/your/favourite/location")`.
+```{r, include=FALSE}
+# Under the hood:
+#       download and cache SingleMoleculeFootprintingData data
+#       locate bam file and write QuasR sampleFile
+
+# Download and cache
+CachedBamPath = SingleMoleculeFootprintingData::NRF1pair.bam()[[1]]
+CachedBaiPath = SingleMoleculeFootprintingData::NRF1pair.bam.bai()[[1]]
+SingleMoleculeFootprintingData::AllCs.rds()
+SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
+SingleMoleculeFootprintingData::ReferenceMethylation.rds()
+
+# Create copy of bam and bai files with relevant names
+CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
+file.copy(from = CachedBamPath, to = paste0(CacheDir, "/", "NRF1pair.bam"))
+file.copy(from = CachedBaiPath, to = paste0(CacheDir, "/", "NRF1pair.bam.bai"))
+
+# Write QuasR input
+data.frame(
+  FileName = paste0(CacheDir, "/", "NRF1pair.bam"),
+  SampleName = "NRF1pair_DE_"
+  ) -> df
+readr::write_delim(df, paste0(CacheDir, "/NRF1Pair_sampleFile.txt"), delim = "\t")
+```
+
+```{r}
+sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+knitr::kable(suppressMessages(readr::read_delim(sampleFile, delim = "\t")))
+```
+
+## Library QCs
+
+### QuasR QC report
+For generic sequencing QCs, we refer to *QuasR*'s [`qQCreport`](https://www.rdocumentation.org/packages/QuasR/versions/1.12.0/topics/qQCReport).
+
+### Bait capture efficiency
+If a bait capture step was included to enrich for regulatory regions, it is useful to check how efficiently that worked.  
+Here we calculate the ratio of molecules overlapping the enrichment targets over the total. 
+A Bait capture efficiency below 70% might be problematic.  
+In that case we refer to the *troubleshooting* section of our [Kleinendorst & Barzaghi et al., 2021](https://doi.org/10.1038/s41596-021-00630-1).
+```{r, eval=FALSE}
+BaitRegions <- SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
+clObj = makeCluster(4)
+BaitCapture(
+  sampleFile = sampleFile, 
+  genome = BSgenome.Mmusculus.UCSC.mm10,
+  baits = BaitRegions, 
+  clObj = clObj
+) -> BaitCaptureEfficiency
+stopCluster(clObj)
+```
+
+### Conversion rate accuracy
+The bisulfite conversion step, chemically converts un-methylated cytosines to thymines. This process has a margin of error.  
+Here we ask what is the percentage of converted cytosines among those which shouldn't be methylated, i.e. those outside of *CpG* or *GpC* contexts. Normally, we expect a conversion rate of ~95%.  
+N.b.: this function runs much slower than the one above, which is why we prefer to check this metric for chr19 only. 
+```{r, eval=FALSE}
+ConversionRate(
+  sampleFile = sampleFile, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  chr = 19
+) -> ConversionRateValue
+```
+
+### Methylation rate sample correlation (high coverage)
+It is useful to compare the distribution of cytosine methylation rates across replicates.
+```{r, eval=FALSE}
+RegionOfInterest = GRanges(BSgenome.Mmusculus.UCSC.mm10@seqinfo["chr19"])
+sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp2.txt"
+samples = unique(readr::read_delim(sampleFile, "\t")$SampleName)
+
+CallContextMethylation(
+  sampleFile = sampleFile, 
+  samples = samples, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest, 
+  coverage = 20, 
+  ConvRate.thr = NULL, 
+  returnSM = FALSE, 
+  clObj = NULL,
+  verbose = FALSE
+  ) -> Methylation
+
+Methylation %>%
+  elementMetadata() %>%
+  as.data.frame() %>%
+  dplyr::select(grep("_MethRate", colnames(.))) -> MethylationRate_matrix
+
+png("../inst/extdata/MethRateCorr_AllCs.png", units = "cm", res = 100, width = 20, height = 20)
+pairs(
+  MethylationRate_matrix, 
+  upper.panel = panel.cor, 
+  diag.panel = panel.hist, 
+  lower.panel = panel.jet, 
+  labels = gsub("SMF_MM_|DE_|_MethRate", "", colnames(MethylationRate_matrix))
+  )
+dev.off()
+```
+
+```{r}
+knitr::include_graphics(system.file("extdata", "MethRateCorr_AllCs.png", package="SingleMoleculeFootprinting"))
+```
+
+It is also useful, especially in the case of single enzyme treatments, to split the genomics contexts of cytosines based on the MTase used.
+```{r, eval=FALSE}
+Methylation %>%
+  elementMetadata() %>%
+  as.data.frame() %>%
+  filter(GenomicContext %in% c("DGCHN", "GCH")) %>%
+  dplyr::select(grep("_MethRate", colnames(.))) -> MethylationRate_matrix_GCH
+
+png("../inst/extdata/MethRateCorr_GCHs.png", units = "cm", res = 100, width = 20, height = 20)
+pairs(MethylationRate_matrix_GCH, upper.panel = panel.cor, diag.panel = panel.hist, lower.panel = panel.jet, labels = colnames(MethylationRate_matrix_GCH))
+dev.off()
+
+Methylation %>%
+  elementMetadata() %>%
+  as.data.frame() %>%
+  filter(GenomicContext %in% c("NWCGW", "HCG")) %>%
+  dplyr::select(grep("_MethRate", colnames(.))) -> MethylationRate_matrix_HCG
+
+png("../inst/extdata/MethRateCorr_HCGs.png", units = "cm", res = 100, width = 20, height = 20)
+pairs(MethylationRate_matrix_HCG, upper.panel = panel.cor, diag.panel = panel.hist, lower.panel = panel.jet, labels = colnames(MethylationRate_matrix_HCG))
+dev.off()
+```
+
+```{r}
+knitr::include_graphics(system.file("extdata", "MethRateCorr_GCHs.png", package="SingleMoleculeFootprinting"))
+knitr::include_graphics(system.file("extdata", "MethRateCorr_HCGs.png", package="SingleMoleculeFootprinting"))
+```
+
+### Methylation rate sample correlation (low coverage)
+Before investing in deep sequencing, it is advisable to shallowly sequence libraries to assess the footprinting quality of the libraries.  
+However the per-cytosine coverage obtained at shallow sequencing is insufficient to estimate methylation rates for individual cytosines.  
+A solution is to pile up molecules covering cytosines from genomic loci that are known to behave similarly and compute a "composite" methylation rate.  
+Such composite methylation rate allows to assess the quality of footprinting at low coverage.  
+
+The following chunk exemplifies how to proceed.  
+First we want to call methylation for the new low depth samples, paying attention to setting the parameter `coverage=1`.  
+Than we want to call methylation for a reference high coverage sample.  
+Finally, we can use the wrapper function `CompositeMethylationCorrelation` to extract composite methylation rates.  
+N.b.: the methylation calling step is quite computationally demanding for full genomes, so we ran this in the background and reported the results only.
+```{r, eval=FALSE}
+RegionOfInterest = GRanges(BSgenome.Mmusculus.UCSC.mm10@seqinfo["chr19"])
+
+sampleFile_LowCoverage = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
+samples_LowCoverage = grep(
+  "_NP_NO_R.*_MiSeq", 
+  unique(readr::read_delim(sampleFile_LowCoverage, "\t")$SampleName), value = TRUE)
+
+CallContextMethylation(
+  sampleFile = sampleFile_LowCoverage, 
+  samples = samples_LowCoverage, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest, 
+  coverage = 1, 
+  ConvRate.thr = NULL, 
+  returnSM = FALSE, 
+  clObj = NULL,
+  verbose = FALSE
+  )$DGCHN -> LowCoverageMethylation
+
+sampleFile_HighCoverage_reference = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
+samples_HighCoverage_reference = grep(
+  "SMF_MM_TKO_as_NO_R_NextSeq", 
+  unique(readr::read_delim(sampleFile_HighCoverage_reference, "\t")$SampleName), value = TRUE)
+
+CallContextMethylation(
+  sampleFile = sampleFile_HighCoverage_reference, 
+  samples = samples_HighCoverage_reference, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest, 
+  coverage = 20, 
+  ConvRate.thr = NULL, 
+  returnSM = FALSE, 
+  clObj = NULL,
+  verbose = FALSE
+  )$DGCHN -> HighCoverageMethylation
+
+CompositeMethylationCorrelation(
+  LowCoverage = LowCoverageMethylation, 
+  LowCoverage_samples = samples_LowCoverage, 
+  HighCoverage = HighCoverageMethylation, 
+  HighCoverage_samples = samples_HighCoverage_reference,
+  bins = 50, 
+  returnDF = TRUE, 
+  returnPlot = TRUE, 
+  RMSE = TRUE, 
+  return_RMSE_DF = TRUE, 
+  return_RMSE_plot = TRUE
+  ) -> results
+```
+
+The methylation distribution plot reveals that replicates SMF_MM_NP_NO_R3_MiSeq and SMF_MM_NP_NO_R3_MiSeq deviate fairly from the reference high coverage sample.
+```{r}
+results <- qs::qread(system.file("extdata", "low_coverage_methylation_correlation.qs", 
+                                 package="SingleMoleculeFootprinting"))
+results$MethylationDistribution_plot +
+  scale_color_manual(
+    values = c("#00BFC4", "#00BFC4", "#00BFC4", "#F8766D", "#F8766D"), 
+    breaks = c("SMF_MM_TKO_as_NO_R_NextSeq", "SMF_MM_NP_NO_R1_MiSeq", "SMF_MM_NP_NO_R2_MiSeq", 
+               "SMF_MM_NP_NO_R3_MiSeq", "SMF_MM_NP_NO_R4_MiSeq"))
+```
+
+The root mean square error plot quantifies this deviation confirming the poorer quality of these replicates.
+```{r}
+results$RMSE_plot +
+  geom_bar(aes(fill = Sample), stat = "identity") +
+  scale_fill_manual(
+    values = c("#00BFC4", "#00BFC4", "#00BFC4", "#F8766D", "#F8766D"), 
+    breaks = c("SMF_MM_TKO_as_NO_R_NextSeq", "SMF_MM_NP_NO_R1_MiSeq", "SMF_MM_NP_NO_R2_MiSeq", 
+               "SMF_MM_NP_NO_R3_MiSeq", "SMF_MM_NP_NO_R4_MiSeq"))
+```
+
+## Single locus analysis
+### Methylation calling
+The function `CallContextMethylation` provides a high-level wrapper to go from alignments to average per-cytosine methylation rates (bulk level) and single molecule methylation matrix.  
+Under the hood, the function performs the following operations: 
+
+* Filter reads by conversion rate (apply only if strictly necessary)
+* Collapse strands to increase coverage
+* Filter cytosines by coverage
+* Filter cytosines in relevant genomic context (based on enzymatic treatment). The type of the experiment should be provided by the user in the form of a sub-string to be included in *SampleName* field of the QuasR *sampleFile* as follows
+```{r, echo=FALSE}
+knitr::kable(data.frame(ExperimentType = c("Single enzyme SMF", "Double enzyme SMF", "No enzyme (endogenous mCpG only)"), 
+                        substring = c("\\_NO_", "\\_DE_", "\\_SS_"), 
+                        RelevanContext = c("DGCHN & NWCGW", "GCH + HCG", "CG"), 
+                        Notes = c("Methylation info is reported separately for each context", "Methylation information is aggregated across the contexts", "-")))
+```
+
+```{r}
+samples <- suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")$SampleName))
+RegionOfInterest <- GRanges("chr6", IRanges(88106000, 88106500))
+
+CallContextMethylation(
+  sampleFile = sampleFile, 
+  samples = samples, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest,
+  coverage = 20, 
+  returnSM = FALSE,
+  ConvRate.thr = NULL,
+  verbose = TRUE,
+  clObj = NULL # N.b.: when returnSM = TRUE, clObj should be set to NULL
+  ) -> Methylation
+```
+The output messages can be suppressed setting the argument `verbose=FALSE`.
+
+`CallContextMethylation` returns a `GRanges` object summarizing the methylation rate (bulk) at each cytosine (one cytosine per row)
+```{r}
+head(Methylation)
+```
+
+When `returnSM=TRUE`, `Methylation` additionally returns a list of sparse single molecule methylation matrixes, one per sample 
+```{r}
+CallContextMethylation(
+  sampleFile = sampleFile, 
+  samples = samples, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest,
+  coverage = 20, 
+  returnSM = TRUE,
+  ConvRate.thr = NULL,
+  verbose = FALSE,
+  clObj = NULL # N.b.: when returnSM = TRUE, clObj should be set to NULL
+  ) -> Methylation
+
+Methylation[[2]]$NRF1pair_DE_[1:10,20:30]
+```
+
+
+### Plotting single sites
+Before moving to single molecule analysis, it is useful to plot the SMF signal in bulk (1 - *methylation rate*), using the function `PlotAvgSMF`.
+```{r}
+PlotAvgSMF(
+  MethGR = Methylation[[1]],
+  RegionOfInterest = RegionOfInterest
+  )
+```
+
+It is possible add information to this plot such as the genomic context of cytosines.
+```{r}
+PlotAvgSMF(
+  MethGR = Methylation[[1]],
+  RegionOfInterest = RegionOfInterest, 
+  ShowContext = TRUE
+  )
+```
+
+The user can also plot annotated TF binding sites by feeding the argument *TFBSs* with a *GRanges* object.  
+N.b.: the GRanges should contain at least one metadata column named *TF* which is used to annotate the TFBSs in the plot. An example of suitable GRanges is shown below:
+```{r}
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+TFBSs
+```
+
+N.b.: the GRanges should be subset for the binding sites overlapping the *RegionOfInterest*, as follows:
+```{r}
+PlotAvgSMF(
+  MethGR = Methylation[[1]],
+  RegionOfInterest = RegionOfInterest, 
+  TFBSs = plyranges::filter_by_overlaps(TFBSs, RegionOfInterest)
+  )
+```
+
+Ultimately, `PlotAvgSMF` returns a `ggplot` object, that can be customized using the ggplot grammar as follows.
+```{r}
+PlotAvgSMF(
+  MethGR = Methylation[[1]],
+  RegionOfInterest = RegionOfInterest, 
+  ) -> smf_plot
+
+user_annotation = data.frame(xmin = 88106300, xmax = 88106500, label = "nucleosome")
+
+smf_plot +
+  geom_line(linewidth = 1.5) +
+  geom_point(size = 3) +
+  geom_rect(data = user_annotation, aes(xmin=xmin, xmax=xmax, ymin=-0.09, ymax=-0.04), inherit.aes = FALSE) +
+  ggrepel::geom_text_repel(data = user_annotation, aes(x=xmin, y=-0.02, label=label), inherit.aes = FALSE) +
+  scale_y_continuous(breaks = c(0,1), limits = c(-.25,1)) +
+  scale_x_continuous(breaks = c(start(RegionOfInterest),end(RegionOfInterest)), limits = c(start(RegionOfInterest),end(RegionOfInterest))) +
+  theme_bw()
+```
+
+```{r, echo=FALSE}
+n = 1000
+readsSubset <- sample(seq(nrow(Methylation[[2]]$NRF1pair_DE_)), n)
+Methylation[[2]]$NRF1pair_DE_ <- Methylation[[2]]$NRF1pair_DE_[readsSubset,]
+```
+
+The function `PlotSM` can be used to plot corresponding single molecule.
+```{r}
+PlotSM(
+  MethSM = Methylation[[2]],
+  RegionOfInterest = RegionOfInterest,
+  sorting.strategy = "None"
+  )
+```
+
+Not much information can be derived from this visualisation.  
+One useful first step is to perform hierarchical clustering. This can be useful to spot PCR artifacts in amplicon data (n.b. reads will be down-sampled to 500).  
+Hierarchical clustering can be performed by setting the parameter `SortedReads = "HC"`
+```{r}
+PlotSM(
+  MethSM = Methylation[[2]],
+  RegionOfInterest = RegionOfInterest,
+  sorting.strategy = "hierarchical.clustering"
+  )
+```
+This amplicon is not particularly affected by PCR artifacts.
+
+### Genetic variation analysis
+
+In [Barzaghi & Baderna et al., 2024](), two F1 mESC lines where obtained by crossing the reference laboratory strain Bl6 with Cast and Spret respectively. 
+
+In such cases of genetic variation SMF data, it is useful to plot SNPs disrupting TFBSs. This can be done by using a GRanges object.  
+N.b.: this GRanges should be already subset for the SNPs overlapping the region of interest.  
+N.b.: this GRanges should have two metadata columns named `R` and `A`, indicating the sequence interested by SNPs or indels.  
+A suitable example follows
+```{r}
+SNPs = qs::qread(system.file("extdata", "SNPs_1.qs", package="SingleMoleculeFootprinting"))
+SNPs
+```
+ 
+This GRanges should be passed to the `SNPs` argument of the `PlotAvgSMF` function
+```{r}
+Methylation = qs::qread(system.file("extdata", "Methylation_1.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_2.qs", package="SingleMoleculeFootprinting"))
+RegionOfInterest = GRanges("chr16", IRanges(8470511,8471010))
+
+PlotAvgSMF(
+  MethGR = Methylation,
+  RegionOfInterest = RegionOfInterest, 
+  TFBSs = TFBSs,
+  SNPs = SNPs
+  )
+```
+
+Occasionally a variant will interest the genomic contexts recognized by the MTase enzymes.  
+In that case the MTase will still target that cytosine on one allele, but not the other.  
+This causes artifacts in SMF signals, whereby the mutated cytosine context will appear fully unmethylated (SMF=1).
+```{r}
+Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+SNPs = qs::qread(system.file("extdata", "SNPs_2.qs", package="SingleMoleculeFootprinting"))
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+
+PlotAvgSMF(
+  MethGR = Methylation,
+  RegionOfInterest = RegionOfInterest, 
+  TFBSs = TFBSs,
+  SNPs = SNPs
+  ) +
+  geom_vline(xintercept = start(SNPs[5]), linetype = 2, color = "grey")
+```
+
+It is important to filter out those cytosines in both alleles. This can be done using the function `MaskSNPs`.  
+This function takes as arguments the `Methylation` object to filter and a GRanges object of `CytosinesToMask`.  
+`CytosinesToMask` has, for each cytosines, the information of whether it is disrupted by SNPs in the Cast or Spret genomes.
+```{r}
+CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", package="SingleMoleculeFootprinting"))
+CytosinesToMask
+```
+The full genomic annotation of disrupted cytosines can be found at `# RESUME HERE`.
+
+N.b.: the `SampleStringMatch` argument should be set to correspond to a string match for `colnames(elementMetadata(Methylation))`
+```{r}
+MaskSNPs(
+  Methylation = Methylation, 
+  CytosinesToMask = CytosinesToMask, 
+  MaskSMmat = FALSE, 
+  SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), 
+  Experiment = "DE"
+  ) -> Methylation_masked
+
+PlotAvgSMF(
+  MethGR = Methylation_masked,
+  RegionOfInterest = RegionOfInterest, 
+  TFBSs = TFBSs,
+  SNPs = SNPs
+  ) +
+  geom_vline(xintercept = start(SNPs[5]), linetype = 2, color = "grey")
+```
+
+## Plotting composite sites
+It can be useful to plot composite data by piling up heterologous features, such as multiple binding sites for a TF.  
+It is advisable to select a subset of motifs, such as the top 500 motifs ranked by ChIP-seq score. That is generally sufficient.  
+Here we exemplify how to do that for the top 500 REST bound motifs.
+```{r, eval=FALSE}
+CollectCompositeData(
+  sampleFile = sampleFile, 
+  samples = samples, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  TFBSs = TopMotifs, 
+  window = 1000, 
+  coverage = 20, 
+  ConvRate.thr = NULL, 
+  cores = 16
+) -> CompositeData
+
+png("../inst/extdata/rest_composite.png", units = "cm", res = 100, width = 24, height = 16)
+CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
+dev.off()
+```
+N.b.: the `CollectCompositeData` function takes several minutes to run, therefore we advice parallelizing computations using the argument `cores`. For 500 motifs, between `4` and `16` cores are suitable.
+
+```{r}
+knitr::include_graphics(system.file("extdata", "rest_composite.png", package="SingleMoleculeFootprinting"))
+```
+
+## sessionInfo
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```

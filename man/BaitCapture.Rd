@@ -4,10 +4,10 @@
 \alias{BaitCapture}
 \title{Bait capture efficiency}
 \usage{
-BaitCapture(sampleSheet, genome, baits, clObj = NULL)
+BaitCapture(sampleFile, genome, baits, clObj = NULL)
 }
 \arguments{
-\item{sampleSheet}{QuasR sample sheet}
+\item{sampleFile}{QuasR sample sheet}
 
 \item{genome}{BS genome}
 
@@ -26,10 +26,9 @@ Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
 library(BSgenome.Mmusculus.UCSC.mm10)
 
 if(file.exists(Qinput)){
-    # DO NOT RUN
     # clObj = parallel::makeCluster(5)
     # BaitRegions = SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
-    # BaitCaptureEfficiency = BaitCapture(sampleSheet = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions, clObj=clObj)
+    # BaitCaptureEfficiency = BaitCapture(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions, clObj=clObj)
     # parallel::stopCluster(clObj)
 }
 

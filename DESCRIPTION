@@ -24,6 +24,7 @@ Imports:
     BiocGenerics,
     Biostrings,
     BSgenome,
+    BSgenome.Mmusculus.UCSC.mm10,
     dplyr,
     GenomeInfoDb,
     GenomicRanges,
@@ -35,14 +36,16 @@ Imports:
     patchwork,
     plyr,
     plyranges,
-	QuasR,
+    QuasR,
     RColorBrewer,
     S4Vectors,
+    SingleMoleculeFootprintingData,
     stats,
     tibble,
     tidyr,
     tidyverse,
-	viridis
+    qs,
+	  viridis
 Description: SingleMoleculeFootprinting is an R package providing functions 
     to analyze Single Molecule Footprinting (SMF) data. 
     Following the workflow exemplified in its vignette, 
@@ -60,15 +63,13 @@ BugReports: https://github.com/Krebslabrep/SingleMoleculeFootprinting/issues
 License: GPL-3
 Encoding: UTF-8
 Suggests: 
-    BSgenome.Mmusculus.UCSC.mm10,
     devtools,
     ExperimentHub,
     knitr,
     parallel,
     rmarkdown,
     readr,
-    SingleMoleculeFootprintingData,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
 VignetteBuilder: knitr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Config/testthat/edition: 3

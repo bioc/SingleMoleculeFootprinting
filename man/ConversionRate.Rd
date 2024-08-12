@@ -4,10 +4,10 @@
 \alias{ConversionRate}
 \title{Conversion rate}
 \usage{
-ConversionRate(sampleSheet, genome, chr = 19, cores = 1)
+ConversionRate(sampleFile, genome, chr = 19, cores = 1)
 }
 \arguments{
-\item{sampleSheet}{QuasR sample sheet}
+\item{sampleFile}{QuasR sample sheet}
 
 \item{genome}{BS genome}
 
@@ -22,6 +22,6 @@ calculate sequencing library conversion rate on a chromosome of choice
 
 Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
 
-ConversionRatePrecision = ConversionRate(sampleSheet = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
+ConversionRatePrecision = ConversionRate(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
 
 }
