@@ -59,18 +59,6 @@ GRanges_to_DF = function(GRanges_obj){
 # HighCoverage_MethRate_SampleCorrelation utils
 #
 
-# string.split=function(string,sep,pos){unlist(lapply(string,function(x){lapply(strsplit(x,sep),'[',pos)}))}
-# 
-# # Useful for plotting
-# VectorizeReads=function(target,mergedMat){ #vectorize reads from matrices in order to plot in base space
-# 
-#   GCmet=as.vector(t(mergedMat))
-#   GCstartP=rep(as.numeric(colnames(mergedMat)),nrow(mergedMat))
-#   GCreadID=unlist(lapply(seq(nrow(mergedMat)),function(i){rep(i,ncol(mergedMat))}))
-#   GCgr=GRanges(seqnames(target),IRanges(as.numeric(colnames(mergedMat)),as.numeric(colnames(mergedMat))))
-#   list(GCstartP,GCreadID,GCmet)
-# }
-
 #'
 #' @export
 #'

@@ -2,22 +2,23 @@
 #' 
 #' The function starts from a list of single TFBSs, arranges them into clusters, calls methylation at the interested sites and outputs sorted reads
 #' 
-#' @param sampleSheet QuasR pointer file
-#' @param sample samples to use, from the SampleName field of the sampleSheet
+#' @param sampleFile QuasR pointer file
+#' @param samples samples to use, from the SampleName field of the sampleFile
 #' @param genome BSgenome
 #' @param coverage coverage threshold as integer for least number of reads to cover a cytosine for it to be carried over in the analysis. Defaults to 20.
-#' @param ConvRate.thr Convesion rate threshold. Double between 0 and 1, defaults to 0.8. To skip this filtering step, set to NULL. For more information, check out the details section.
-# #' @param clObj cluster object for parallel processing of multiple samples/RegionsOfInterest. For now only used by qMeth call for bulk methylation. Should be the output of a parallel::makeCluster() call
-#' @param CytosinesToMask THIS IS DUCK-TAPE
+#' @param ConvRate.thr Convesion rate threshold. Double between 0 and 1, defaults to NULL. To skip this filtering step, set to NULL. For more information, check out the details section.
+#' @param CytosinesToMask CytosinesToMask object. Passed to MaskSNPs function
 #' @param TFBSs GRanges object of transcription factor binding sites coordinates
 #' @param max_interTF_distance maximum distance between two consecutive TFBSs for them to be grouped in the same window
 #' @param max_window_width upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call
 #' @param min_cluster_width lower limit to window width. Corresponds to the scenario when a window contains a single TFBS.
+#' @param fix.window.size defaults to FALSE. Passed to Create_MethylationCallingWindows function.
+#' @param max.window.size defaults to NULL. Passed to Create_MethylationCallingWindows function.
+#' @param sorting_coverage integer. Minimum number of reads covering all sorting bins for sorting to be performed. Defaults to 30.
 #' @param bins list of 3 relative bin coordinates. Defaults to list(c(-35,-25), c(-15,15), c(25,35)).
 #'             bins[[1]] represents the upstream bin, with coordinates relative to the start of the most upstream TFBS.
 #'             bins[[2]] represents all the TFBS bins, with coordinates relative to the center of each TFBS.
 #'             bins[[3]] represents the downstream bin, with coordinates relative to the end of the most downstream TFBS.
-#' @param sorting_coverage integer. Minimum number of reads covering all sorting bins for sorting to be performed. Defaults to 30.
 #' @param cores number of cores to use for parallel processing of multiple Methylation Calling Windows (i.e. groupings of adjecent TFBS clusters)
 #' 
 #' @importFrom parallel mclapply
@@ -31,10 +32,9 @@
 #' 
 #' @export
 #' 
-SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, coverage = 20, ConvRate.thr = 0.8, # clObj=NULL, ---> parameters passed to CallContextMethylation
-                                                 CytosinesToMask = NULL,
-                                                 TFBSs,
-                                                 max_interTF_distance = 100000, max_window_width = 5000000, min_cluster_width = 600, # ---> parameters passed to Create_MethylationCallingWindows
+SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = NULL, # ---> parameters passed to CallContextMethylation
+                                                 CytosinesToMask = NULL, TFBSs,
+                                                 max_interTF_distance = 100000, max_window_width = 5000000, min_cluster_width = 600, fix.window.size = FALSE, max.window.size = NULL, # ---> parameters passed to Create_MethylationCallingWindows
                                                  sorting_coverage = 30, bins = list(c(-35,-25), c(-15,15), c(25,35)), # ---> parameters passed to SortReadsByTFCluster
                                                  cores = 1
 ){
@@ -42,11 +42,13 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
   names(TFBSs) = paste0("TFBS_", seq(TFBSs))
   
   message("(1) DESIGNING COMMON METHYLATION CALLING WINDOWS FOR ADJACENT CLUSTERS")
-  MethylationCallingWindows = Create_MethylationCallingWindows(TFBS_cluster_coordinates = TFBSs,
+  MethylationCallingWindows = Create_MethylationCallingWindows(RegionsOfInterest = TFBSs,
                                                                max_intercluster_distance = max_interTF_distance,
                                                                max_window_width = max_window_width,
                                                                min_cluster_width = min_cluster_width,
-                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome))
+                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome), 
+                                                               fix.window.size = fix.window.size, 
+                                                               max.window.size = max.window.size)
   message(paste0(length(MethylationCallingWindows), " METHYLATION CALLING WINDOWS DESIGNED"))
   
   message("(2) CALLING METHYLATION AND SORTING")
@@ -55,10 +57,10 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
     print(i)
     
     CurrentWindow = MethylationCallingWindows[i]
-    ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = sample))
+    ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = samples))
     
-    CallContextMethylation(sampleSheet = sampleSheet,
-                           sample = sample,
+    CallContextMethylation(sampleFile = sampleFile,
+                           samples = samples,
                            genome = genome,
                            RegionOfInterest = CurrentWindow,
                            coverage = coverage,
@@ -72,11 +74,10 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
     if (!is.null(CytosinesToMask)){
       
       message("Masking Cytosines")
-      source("/g/krebs/barzaghi/Rscripts/CrappyUtils.R")
-      MaskSNPs2(Methylation = Methylation, 
-                CytosinesToMaks = CytosinesToMask, 
-                MaskSMmat = TRUE, 
-                Experiment = ExperimentType) -> Methylation
+      MaskSNPs(Methylation = Methylation, 
+               CytosinesToMask = CytosinesToMask, 
+               MaskSMmat = TRUE, 
+               Experiment = ExperimentType) -> Methylation
       
     }
     
@@ -117,13 +118,12 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
 #' 
 #' The function starts from a list of single TFBSs, arranges them into clusters, calls methylation at the interested sites and outputs sorted reads
 #' 
-#' @param sampleSheet QuasR pointer file
-#' @param sample samples to use, from the SampleName field of the sampleSheet
+#' @param sampleFile QuasR pointer file
+#' @param samples samples to use, from the SampleName field of the sampleFile
 #' @param genome BSgenome
 #' @param coverage coverage threshold as integer for least number of reads to cover a cytosine for it to be carried over in the analysis. Defaults to 20.
 #' @param ConvRate.thr Convesion rate threshold. Double between 0 and 1, defaults to 0.8. To skip this filtering step, set to NULL. For more information, check out the details section.
-# #' @param clObj cluster object for parallel processing of multiple samples/RegionsOfInterest. For now only used by qMeth call for bulk methylation. Should be the output of a parallel::makeCluster() call
-#' @param CytosinesToMask THIS IS DUCK-TAPE
+#' @param CytosinesToMask CytosinesToMask object. Passed to MaskSNPs function
 #' @param TFBSs GRanges object of transcription factor binding sites coordinates
 #' @param max_intersite_distance maximum allowed distance in base pairs between two TFBS centers for them to be considered part of the same cluster. Defaults to 75.
 #' @param min_intersite_distance minimum allowed distance in base pairs between two TFBS centers for them not to be discarded as overlapping. 
@@ -132,6 +132,8 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
 #' @param max_intercluster_distance maximum distance between two consecutive TFBS clusters for them to be grouped in the same window
 #' @param max_window_width upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call
 #' @param min_cluster_width lower limit to window width. Corresponds to the scenario when a window contains a single TFBS cluster.
+#' @param fix.window.size defaults to FALSE. Passed to Create_MethylationCallingWindows function.
+#' @param max.window.size defaults to NULL. Passed to Create_MethylationCallingWindows function.
 #' @param bins list of 3 relative bin coordinates. Defaults to list(c(-35,-25), c(-7,7), c(25,35)).
 #'             bins[[1]] represents the upstream bin, with coordinates relative to the start of the most upstream TFBS.
 #'             bins[[2]] represents all the TFBS bins, with coordinates relative to the center of each TFBS.
@@ -146,14 +148,14 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleSheet, sample, genome, cov
 #' 
 #' @return list where [[1]] is the TFBS_Clusters object describing coordinates and composition of the TFBS clusters used to sort single molecules
 #'                    [[2]] is a list of SortedReads nested per TFBS_cluster and sample
-#'                    [[3]] is a tibble reporting the count (and frequency) of reads per state, sample and TFBS cluster
+#'                    [[3]] is a tibble reporting the count (and frequency) of reads per state, samples and TFBS cluster
 #' 
 #' @export
 #' 
-SortReadsByTFCluster_MultiSiteWrapper = function(sampleSheet, sample, genome, coverage = 20, ConvRate.thr = 0.8, # clObj=NULL, ---> parameters passed to CallContextMethylation
+SortReadsByTFCluster_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = 0.8, # ---> parameters passed to CallContextMethylation
                                                  CytosinesToMask = NULL,
                                                  TFBSs, max_intersite_distance = 75, min_intersite_distance = 15, max_cluster_size = 10, max_cluster_width = 300, add.single.TFs = TRUE,  # ---> parameters passed to Arrange_TFBSs_clusters
-                                                 max_intercluster_distance = 1e5, max_window_width = 5e6, min_cluster_width = 600, # ---> parameters passed to Create_MethylationCallingWindows
+                                                 max_intercluster_distance = 1e5, max_window_width = 5e6, min_cluster_width = 600, fix.window.size = FALSE, max.window.size = NULL, # ---> parameters passed to Create_MethylationCallingWindows
                                                  sorting_coverage = 30, bins = list(c(-35,-25), c(-7,7), c(25,35)), # ---> parameters passed to SortReadsByTFCluster
                                                  cores = 1
                                                  ){
@@ -168,11 +170,13 @@ SortReadsByTFCluster_MultiSiteWrapper = function(sampleSheet, sample, genome, co
   message(paste0(length(TFBS_Clusters$ClusterCoordinates), " CLUSTERS FOUND"))
   
   message("(2) DESIGNING COMMON METHYLATION CALLING WINDOWS FOR ADJACENT CLUSTERS")
-  MethylationCallingWindows = Create_MethylationCallingWindows(TFBS_cluster_coordinates = TFBS_Clusters$ClusterCoordinates,
+  MethylationCallingWindows = Create_MethylationCallingWindows(RegionsOfInterest = TFBS_Clusters$ClusterCoordinates,
                                                                max_intercluster_distance = max_intercluster_distance,
                                                                max_window_width = max_window_width,
                                                                min_cluster_width = min_cluster_width,
-                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome))
+                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome), 
+                                                               fix.window.size = fix.window.size, 
+                                                               max.window.size = max.window.size)
   message(paste0(length(MethylationCallingWindows), " METHYLATION CALLING WINDOWS DESIGNED"))
   
   message("(3) CALLING METHYLATION AND SORTING")
@@ -181,10 +185,10 @@ SortReadsByTFCluster_MultiSiteWrapper = function(sampleSheet, sample, genome, co
     print(i)
     
     CurrentWindow = MethylationCallingWindows[i]
-    ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = sample))
+    ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = samples))
     
-    CallContextMethylation(sampleSheet = sampleSheet,
-                           sample = sample,
+    CallContextMethylation(sampleFile = sampleFile,
+                           samples = samples,
                            genome = genome,
                            RegionOfInterest = CurrentWindow,
                            coverage = coverage,
@@ -199,8 +203,8 @@ SortReadsByTFCluster_MultiSiteWrapper = function(sampleSheet, sample, genome, co
       
       message("Masking Cytosines")
       source("/g/krebs/barzaghi/Rscripts/CrappyUtils.R")
-      MaskSNPs2(Methylation = Methylation, 
-               CytosinesToMaks = CytosinesToMask, 
+      MaskSNPs(Methylation = Methylation, 
+               CytosinesToMask = CytosinesToMask, 
                MaskSMmat = TRUE, 
                Experiment = ExperimentType) -> Methylation
       

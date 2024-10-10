@@ -4,10 +4,12 @@
 \alias{StateQuantificationPlot}
 \title{Plot states quantification bar}
 \usage{
-StateQuantificationPlot(SortedReads)
+StateQuantificationPlot(SortedReads, states)
 }
 \arguments{
 \item{SortedReads}{Sorted reads object as returned by SortReads function}
+
+\item{states}{either SingleTFStates() or TFPairStates()}
 }
 \value{
 Bar plot quantifying states
@@ -31,6 +33,6 @@ elementMetadata(TFBSs)$name = c("NRF1")
 names(TFBSs) = c(paste0("TFBS_", c(4305216)))
 SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
 
-StateQuantificationPlot(SortedReads = SortedReads)
+StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
 
 }

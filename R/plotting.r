@@ -241,10 +241,11 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
     
     if (PatternLength == 3){ # Single TF
       message("Inferring sorting was performed by single TF")
-      ordered.sorting.patterns = rev(Reduce(c, OneTFstates()))
+      ordered.sorting.patterns = rev(Reduce(c, SingleTFStates()))
     } else if (PatternLength == 4){ # TF pair
       message("Inferring sorting was performed by TF pair")
-      ordered.sorting.patterns = as.character(unlist(TFpairStates()))
+      # ordered.sorting.patterns = rev(as.character(unlist(TFPairStates())))
+      ordered.sorting.patterns = rev(c("1001", "1010", "1011", "0101", "1101", "1111", "0111", "0011", "0001", "1110", "0110", "0010", "1100", "0100", "1000", "0000"))
     } else {
       ordered.sorting.patterns = NULL
     }
@@ -278,101 +279,14 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
 
 }
 
-#' Single TF state quantification bar
-#'
-#' @param SortedReads List of sorted reads (can be multiple samples) as returned by SortReadsBySingleTF (or SortReads run with analogous parameters)
-#' @param states as returned by OneTFstates function
-#'
-#' @importFrom RColorBrewer brewer.pal
-#' @import dplyr
-#' @importFrom grDevices colorRampPalette
-#' @importFrom stats na.omit
-#'
-SingleTFStateQuantificationPlot = function(SortedReads, states){
- 
-  OrderedReads = lapply(SortedReads, function(sR){sR[as.character(unlist(states))]})
-  
-  Reduce(rbind,
-         lapply(seq_along(OrderedReads), function(i){
-           Reduce(rbind,
-                  lapply(seq_along(OrderedReads[[i]]), function(j){
-                    if(!is.null(OrderedReads[[i]][[j]])){
-                      tibble(ReadID = OrderedReads[[i]][[j]], 
-                             Pattern = names(OrderedReads[[i]])[j], 
-                             Sample = names(OrderedReads)[i])
-                      }
-                    }))
-           })) -> OrderedReads_tbl
-  
-  Colors = colorRampPalette(RColorBrewer::brewer.pal(9,"Set1"))(9)[c(4,3,2,9)]
-  names(Colors) = names(states)
-  full_join(unique(gather(as_tibble(states), "State", "Pattern")), 
-            rownames_to_column(as.data.frame(Colors), "State"), "State") -> State_Color_tbl
-  
-  na.omit(full_join(OrderedReads_tbl, State_Color_tbl, "Pattern")) -> PlottingDF
-  PlottingDF$ReadID = factor(PlottingDF$ReadID, levels = rev(PlottingDF$ReadID))
-  PlottingDF$State = factor(PlottingDF$State, levels = unique(PlottingDF$State))
-  
-  PlottingDF %>%
-    ggplot(aes(x=1, y=ReadID)) + 
-    geom_tile(aes(fill=State), height=1, width=1) +
-    facet_wrap(~Sample, scales = "free_y", dir = 'v') +
-    ylab("") +
-    xlab("") +
-    scale_discrete_manual(aesthetics = "fill", values = unique(PlottingDF$Colors)) +
-    theme_classic() +
-    theme(axis.text=element_blank(), axis.ticks=element_blank(), axis.line = element_blank())
-
-}
-
-#' TF pair state quantification bar
-#'
-#' @param SortedReads List of sorted reads (can be multiple samples) as returned by SortReadsByTFCluster (or SortReads run with analogous parameters)
-#' @param states as returned by TFpairStates function
-#'
-#' @importFrom RColorBrewer brewer.pal
-#' @import dplyr
-#' @importFrom stats na.omit
-#'
-TFPairStateQuantificationPlot = function(SortedReads, states){
-
-  OrderedReads = lapply(SortedReads, function(sR){sR[as.character(unlist(states))]})
-  
-  Reduce(rbind,
-         lapply(seq_along(OrderedReads), function(i){
-           Reduce(rbind,
-                  lapply(seq_along(OrderedReads[[i]]), function(j){
-                    if(!is.null(OrderedReads[[i]][[j]])){
-                      tibble(ReadID = OrderedReads[[i]][[j]], 
-                             Pattern = names(OrderedReads[[i]])[j], 
-                             Sample = names(OrderedReads)[i])
-                    }
-                  }))
-         })) -> OrderedReads_tbl
-  
-  full_join(OrderedReads_tbl, rownames_to_column(data.frame(Pattern = unlist(states)), "State"), "Pattern") %>% 
-    na.omit() %>% 
-    separate(Pattern, into = c(paste0("Bin", seq(unique(nchar(unlist(states)))))), sep = "(?<=.)", extra = 'drop') %>%
-    gather(Bin, Methylation, -ReadID, -Sample, -State) -> PlottingDF
-  PlottingDF$ReadID = factor(PlottingDF$ReadID, levels = unlist(OrderedReads))
-  
-  PlottingDF %>%
-    ggplot(aes(x=Bin, y=ReadID)) + 
-    geom_tile(aes(fill=Methylation), height=1, width=1) +
-    facet_wrap(~Sample, scales = "free_y", dir = 'v') +
-    ylab("") +
-    xlab("") +
-    scale_discrete_manual(aesthetics = "fill", values = c("black", "grey")) +
-    theme_classic() +
-    theme(axis.text=element_blank(), axis.ticks=element_blank(), axis.line = element_blank())
-  
-}
-
 #' Plot states quantification bar
 #'
 #' @param SortedReads Sorted reads object as returned by SortReads function
-#'
+#' @param states either SingleTFStates() or TFPairStates()
+#' 
 #' @return Bar plot quantifying states
+#' 
+#' @import dplyr
 #'
 #' @export
 #'
@@ -392,30 +306,82 @@ TFPairStateQuantificationPlot = function(SortedReads, states){
 #' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
 #' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
 #'
-#' StateQuantificationPlot(SortedReads = SortedReads)
+#' StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
 #'
-StateQuantificationPlot = function(SortedReads){
-
-  PatternLength = unique(unlist(lapply(seq_along(SortedReads), function(i){unique(nchar(names(SortedReads[[i]])))})))
+StateQuantificationPlot = function(SortedReads, states){
   
-  if (PatternLength == 3){ # Single TF
-
-    message("Inferring sorting was performed by single TF")
-    states = OneTFstates()
-    SingleTFStateQuantificationPlot(SortedReads, states)
-
-  } else if (PatternLength == 4){ # TF pair
-
-    message("Inferring sorting was performed by TF pair")
-    states = TFpairStates()
-    TFPairStateQuantificationPlot(SortedReads, states)
-
-  } else {
-    
-    message("Unrecognized sorting strategy ... skipping")
-    
+  if(states[[1]] == "101"){
+    states_df = unique(gather(as_tibble(states), "State", "Pattern")) %>%
+      mutate(State = factor(State, levels = c("bound", "accessible", "closed", "unassigned")))
+  } else if (states[[1]] == "1001"){
+    states_df = data.frame(
+      State = rep(names(states), lengths(states)),
+      Pattern = unlist(states, use.names = FALSE)
+    ) %>%
+      mutate(
+        State = factor(State, levels = c("bound_bound", "bound_misc", "misc_bound", "misc")),
+        Pattern = factor(Pattern, levels = c("1001", "1010", "1011", "0101", "1101", "1111", "0111", "0011", "0001", "1110", "0110", "0010", "1100", "0100", "1000", "0000"))
+      ) %>%
+      arrange(State, Pattern)
   }
+  
+  Reduce(rbind, lapply(seq_along(SortedReads), function(i){
+    data.frame(
+      ReadID = unlist(SortedReads[[i]], recursive = TRUE, use.names = FALSE),
+      Pattern = rep(names(SortedReads[[i]]), lengths(SortedReads[[i]])),
+      Sample = names(SortedReads)[i]
+    )
+  })) %>%
+    left_join(., states_df, by = "Pattern") %>%
+    arrange(desc(State)) %>%
+    mutate(ReadID = factor(ReadID, levels = ReadID)) -> PlottingDF
+  
+  if(states[[1]] == "101"){
+    PlottingDF %>%
+      ggplot(aes(x=1, y=ReadID, fill=State)) + 
+      geom_tile() +
+      facet_wrap(~Sample, scales = "free_y", dir = 'v') +
+      ylab("") +
+      xlab("") +
+      scale_fill_manual(breaks = names(states), values = c("#984EA3", "#4DAF4A", "#377EB8", "#999999")) + 
+      theme_classic() +
+      theme(axis.text=element_blank(), axis.ticks=element_blank(), axis.line = element_blank()) -> pl
+  } else if (states[[1]] == "1001") {
+    PlottingDF %>%
+      separate(Pattern, into = c(paste0("Bin", seq(unique(nchar(unlist(states)))))), sep = "(?<=.)", extra = 'drop') %>%
+      gather(Bin, Methylation, -ReadID, -Sample, -State) %>%
+      ggplot(aes(x=Bin, y=ReadID)) + 
+      geom_tile(aes(fill=Methylation), height=1, width=1) +
+      facet_wrap(~Sample, scales = "free_y", dir = 'v') +
+      ylab("") +
+      xlab("") +
+      scale_discrete_manual(aesthetics = "fill", values = c("black", "grey")) +
+      theme_classic() +
+      theme(axis.text=element_blank(), axis.ticks=element_blank(), axis.line = element_blank()) -> pl
+  }
+  
+  return(pl)
+  
+}
 
+#' Single TF state quantification bar
+#'
+#' @param SortedReads Sorted reads as returned by SortReadsBySingleTF
+#'
+SingleTFStateQuantificationPlot = function(SortedReads){
+  
+  StateQuantificationPlot(SortedReads = SortedReads, states = SingleTFStates())
+  
+}
+
+#' TF pair state quantification bar
+#'
+#' @param SortedReads Sorted reads as returned by SortReadsByTFCluster
+#'
+TFPairStateQuantificationPlot = function(SortedReads){
+  
+  StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
+  
 }
 
 #' Plot SMF data at single site

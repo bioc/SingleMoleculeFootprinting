@@ -238,13 +238,13 @@ Arrange_TFBSs_clusters = function(
 #' 
 #' Relevant for genome-wide analyses
 #' 
-#' @param TFBS_cluster_coordinates TFBS cluster coordinates analogous to ClusterCoordinates object returned by Arrange_TFBSs_clusters function
+#' @param RegionsOfInterest TFBS cluster coordinates analogous to ClusterCoordinates object returned by Arrange_TFBSs_clusters function
 #' @param max_intercluster_distance maximum distance between two consecutive TFBS clusters for them to be grouped in the same window
 #' @param max_window_width upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call
 #' @param min_cluster_width lower limit to window width. Corresponds to the scenario when a window contains a single TFBS cluster.
 #' @param genomic.seqlenghts used to fix the windows spanning over chromosome edges. To be fetched by GenomeInfoDb::seqlengths() or equivalent.
 #' @param fix.window.size Defaults to FALSE. When TRUE, overrides arguments max_intercluster_distance and max_window_width and produces windows containing a fixed number of TFBS_clusters.
-#' @param max.window.size Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if TFBS_cluster_coordinates overlap
+#' @param max.window.size Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if RegionsOfInterest overlap
 #' 
 #' @import GenomicRanges
 #' @import plyranges
@@ -254,7 +254,7 @@ Arrange_TFBSs_clusters = function(
 #' @export
 #' 
 Create_MethylationCallingWindows = function(
-    TFBS_cluster_coordinates, 
+    RegionsOfInterest, 
     max_intercluster_distance = 100000, 
     max_window_width = 5000000, 
     min_cluster_width = 600, 
@@ -265,7 +265,7 @@ Create_MethylationCallingWindows = function(
   if(isFALSE(fix.window.size)){
     
     message(paste0("Group TFBS_clusters that fall within ", max_intercluster_distance, "bp from each other in broader searching windows"))
-    SearchingWindows = plyranges::reduce_ranges(resize(TFBS_cluster_coordinates, width = max_intercluster_distance, fix = 'center'))
+    SearchingWindows = plyranges::reduce_ranges(resize(RegionsOfInterest, width = max_intercluster_distance, fix = 'center'))
     message("Trimming searching windows")
     start(SearchingWindows) = start(SearchingWindows) + ((max_intercluster_distance/2) - (min_cluster_width/2))
     end(SearchingWindows) = end(SearchingWindows) - ((max_intercluster_distance/2) - (min_cluster_width/2))
@@ -277,8 +277,8 @@ Create_MethylationCallingWindows = function(
       SmallerWindow = max_intercluster_distance*0.9
       message("Reducing too large searching windows")
       
-      Overlaps = findOverlaps(SearchingWindows[TooLarge], TFBS_cluster_coordinates)
-      SmallerWindows = plyranges::reduce_ranges(resize(TFBS_cluster_coordinates[subjectHits(Overlaps)], width = SmallerWindow, fix = "center"))
+      Overlaps = findOverlaps(SearchingWindows[TooLarge], RegionsOfInterest)
+      SmallerWindows = plyranges::reduce_ranges(resize(RegionsOfInterest[subjectHits(Overlaps)], width = SmallerWindow, fix = "center"))
       SearchingWindows = sort(c(SearchingWindows[!TooLarge], SmallerWindows))
       
       max_intercluster_distance = SmallerWindow
@@ -294,7 +294,7 @@ Create_MethylationCallingWindows = function(
     
   } else {
     
-    TFBS_cluster_coordinates %>%
+    RegionsOfInterest %>%
       IRanges::reduce(ignore.strand = TRUE) %>%
       sort() %>%
       plyranges::mutate(idx = rep(seq(ceiling(length(.)/max.window.size)), each = max.window.size)[seq_along(.)]) %>%

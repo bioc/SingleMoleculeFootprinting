@@ -5,7 +5,7 @@
 \title{Create methylation calling windows to call context methylation in one run for clusters lying proximally to each other}
 \usage{
 Create_MethylationCallingWindows(
-  TFBS_cluster_coordinates,
+  RegionsOfInterest,
   max_intercluster_distance = 1e+05,
   max_window_width = 5e+06,
   min_cluster_width = 600,
@@ -15,7 +15,7 @@ Create_MethylationCallingWindows(
 )
 }
 \arguments{
-\item{TFBS_cluster_coordinates}{TFBS cluster coordinates analogous to ClusterCoordinates object returned by Arrange_TFBSs_clusters function}
+\item{RegionsOfInterest}{TFBS cluster coordinates analogous to ClusterCoordinates object returned by Arrange_TFBSs_clusters function}
 
 \item{max_intercluster_distance}{maximum distance between two consecutive TFBS clusters for them to be grouped in the same window}
 
@@ -27,7 +27,7 @@ Create_MethylationCallingWindows(
 
 \item{fix.window.size}{Defaults to FALSE. When TRUE, overrides arguments max_intercluster_distance and max_window_width and produces windows containing a fixed number of TFBS_clusters.}
 
-\item{max.window.size}{Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if TFBS_cluster_coordinates overlap}
+\item{max.window.size}{Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if RegionsOfInterest overlap}
 }
 \value{
 GRanges object of window coordinates to be used for more efficient calls of CallContextMethylation

@@ -4,12 +4,10 @@
 \alias{SingleTFStateQuantificationPlot}
 \title{Single TF state quantification bar}
 \usage{
-SingleTFStateQuantificationPlot(SortedReads, states)
+SingleTFStateQuantificationPlot(SortedReads)
 }
 \arguments{
-\item{SortedReads}{List of sorted reads (can be multiple samples) as returned by SortReadsBySingleTF (or SortReads run with analogous parameters)}
-
-\item{states}{as returned by OneTFstates function}
+\item{SortedReads}{Sorted reads as returned by SortReadsBySingleTF}
 }
 \description{
 Single TF state quantification bar

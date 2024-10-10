@@ -35,8 +35,6 @@ BinMethylation = function(MethSM, Bin){
     return(NA)
   }
 
-
-
 }
 
 #' Sort reads by single TF
@@ -84,7 +82,7 @@ SortReads = function(MethSM, BinsCoordinates, coverage=NULL){
 
 	message("Splitting reads by pattern")
 	if(length(ReadsSubset)>0){
-	  sortedReadslist = split(ReadsSubset, MethPattern) #paste(names(TFBS), MethPattern, sep='_'))
+	  sortedReadslist = split(ReadsSubset, MethPattern)
 	}else{
 	  sortedReadslist = list()
 	  }
@@ -168,7 +166,7 @@ SortReadsByTFCluster = function(MethSM, TFBS_cluster, bins = list(c(-35,-25), c(
 #' Convenience for calculating state frequencies
 #' 
 #' @param SortedReads List of sorted reads (can be multiple samples) as returned by either read sorting function (SortReads, SortReadsBySingleTF, SortReadsByTFCluster)
-#' @param states states reporting the biological interpretation of patterns as return by either OneTFstates or TFpairStates functions. If NULL (default) will return frequencies without biological interpretation.
+#' @param states states reporting the biological interpretation of patterns as return by either SingleTFStates or TFPairStates functions. If NULL (default) will return frequencies without biological interpretation.
 #' 
 #' @importFrom tibble tibble
 #' 
@@ -223,7 +221,7 @@ StateQuantification = function(SortedReads, states){
 #' 
 StateQuantificationBySingleTF = function(SortedReads){
   
-  states = OneTFstates()
+  states = SingleTFStates()
   res = StateQuantification(SortedReads = SortedReads, states = states)
   return(res)
   
@@ -241,7 +239,7 @@ StateQuantificationBySingleTF = function(SortedReads){
 #' 
 StateQuantificationByTFPair = function(SortedReads){
   
-  states = TFpairStates()
+  states = TFPairStates()
   res = StateQuantification(SortedReads = SortedReads, states = states)
   return(res)
   

@@ -25,69 +25,248 @@ knitr::opts_chunk$set(
 ## Introduction
 This vignette exemplifies how to perform single molecule sorting based on prior TF binding site annotation as per [Sönmezer et al., 2021](https://doi.org/10.1016/j.molcel.2020.11.015) and [Kleinendorst & Barzaghi et al., 2021](https://doi.org/10.1038/s41596-021-00630-1).  
 
-## Single TF
-```{r, eval=TRUE}
-OneTFState()
+## Loading libraries
+```{r setup, message=FALSE}
+suppressWarnings(library(SingleMoleculeFootprinting))
+suppressWarnings(library(BSgenome.Mmusculus.UCSC.mm10))
 ```
 
-## TF pair
-```{r, eval=TRUE}
+## Sorting by single TF
+```{r, eval=FALSE, echo=FALSE}
+RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+TFBSs_full_list = qs::qread("/g/krebs/barzaghi/DB/TFBSs.qs")
 
+Methylation = CallContextMethylation(
+  sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_AllCanWGpooled_dprm_DE_only.txt", samples = "SMF_MM_TKO_DE_", genome = BSgenome.Mmusculus.UCSC.mm10,
+  RegionOfInterest = RegionOfInterest, coverage = 20, ConvRate.thr = NULL, returnSM = TRUE, clObj = NULL, verbose = FALSE
+)
+qs::qsave(Methylation, "../inst/extdata/Methylation_3.qs")
+
+TFBSs = plyranges::filter(plyranges::filter_by_overlaps(TFBSs_full_list, RegionOfInterest), TF == "CTCF")
+elementMetadata(TFBSs) = NULL
+TFBSs$TF = "CTCF"
+qs::qsave(TFBSs, "../inst/extdata/TFBSs_3.qs")
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-Ultimately though, we want to classify reads based on their patterns of molecular occupancy. To that end we provide the functions `SortReadsBySingleTF` and `SortReadsByTFCluster` to classify reads based either on the occupancy patterns of one or multiple transcription factors. \
-
-Under the hood, the classification is based on the definition of $n+2$ bins (with $n$ being the number of TFs). The $n$ bins are each centered around one of the TFBSs of interest, while the 2 extra bins are located upstream and downstream of the two outmost TFBSs. \
-
-For `SortReadsBySingleTF`, the coordinates of the bins relative to the center of the TFBS are [-35;-25], [-15;+15], [+25,+35]. Instead, the function `SortReadsByTFCluster` draws a bin with coordinates [-7;+7] around the center of each TFBS, a bin with coordinates [-35;-25] relative to center of the most upstream TFBS and a bin with coordinates [+25,+35] relative to the center of the most downstream TFBS. The user can also employ custom coordinates by specifying them explicitly using the function `SortReads`. \
-
-For each read, the binary methylation status of the cytosines contained in each bin is averaged to either a 0 or a 1 such that each read is eventually represented as sequence of $n+2$ binary digits, for a total of $2^{(n+2)}$ possible sequences. \
-
-Here, we show a usage case for the `SortReadsByTFCluster` function, as we have already identified the double binding of NRF1 at the genomic site under scrutiny. Usage and exploration of the output is identical for the other function, except for the the format of the *TFBSs* argument which should consist of a GRanges object of length 1 for `SortReadsBySingleTF` and of length $>$ 1 for `SortReadsByTFCluster`.
-```{r, eval=TRUE}
-SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
-```
-
-```{r, echo=FALSE}
-print(paste0("Number of retrieved states: ", as.character(length(SortedReads))))
-print("States population:")
-unlist(lapply(SortedReads, length))
-```
-N.b. non-populated states are not returned. \
-
-The output of each of these sorting functions can be passed directly as the `SortedReads` argument of the `PlotSM` function.
+Sorting by single TF requires designing three bins with coordinates [-35;-25], [-15;+15], [+25,+35] relative to the center of the TF motif.  
+Here we exemplify the process manually for clarity.  
 ```{r}
-PlotSM(MethSM = Methylation[[2]], range = Region_of_interest, SortedReads = SortedReads)
+RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+
+motif_center = start(IRanges::resize(TFBSs, 1, "center"))
+SortingBins = c(
+  GRanges("chr1", IRanges(motif_center-35, motif_center-25)),
+  GRanges("chr1", IRanges(motif_center-15, motif_center+15)),
+  GRanges("chr1", IRanges(motif_center+25, motif_center+35))
+)
+
+PlotAvgSMF(
+  MethGR = Methylation[[1]], RegionOfInterest = RegionOfInterest, 
+  TFBSs = TFBSs, SortingBins = SortingBins
+  )
 ```
 
-N.b. despite sorting reads by a TF cluster is in principle possible with clusters of any size, as of now the `PlotSM` function can only deal with TF pairs.
+Sorting molecules involves averaging, for each molecule, the binary methylation values for the cytosines overlapping those bins.  
+Reducing those averages to integers summarises each molecule to three binary digits.  
+We sort and plot molecules based on these digits.  
+The whole process is wrapped in the `SortReadsBySingleTF` function.  
+```{r, eval=TRUE}
+SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
+```
+N.b.: custom bins can be used by through the argument `bins`.  
 
-
-In order to be quantitative about these observations, the user can employ the `StateQuantificationPlot`. The function outputs a bar plot annotated with the percentage of reads found in each state. The function takes, as argument, the output of either of the two sorting functions.
+The function returns a list with one item per sample.  
+Each of these is itself a list of up to eight items, one per possible combination of three binary digits, i.e. 000, 001, 010, etc.  
+Each of these items contains the IDs of the molecules sorted.  
+N.b.: patterns with 0 molecules will not be reported.  
 ```{r}
-StateQuantificationPlot(SortedReads = SortedReads)
+lapply(SortedReads$SMF_MM_TKO_DE_, head, 2)
 ```
 
-Finally, we provide the wrapper function `PlotSingleSiteSMF` to plot at once the three kinds of information detailed above and to export results as a pdf.
+The number of molecules per pattern can be checked using `lenghts`.  
+```{r}
+lengths(SortedReads$SMF_MM_TKO_DE_)
+```
+Here most molecules show the 101 pattern.  
+
+These patterns are not immediately human readable. For convenience we hard-coded a biological interpretation in the function `SingleTFStates`.  
+```{r}
+SingleTFStates()
+```
+
+This function can be used together with the function `StateQuantification`, to compute the frequencies of the biological states associated with single TF binding.  
+The function `StateQuantificationBySingleTF` hard-codes the `states` argument for convenience.  
+```{r}
+StateQuantification(SortedReads = SortedReads, states = SingleTFStates())
+```
+
+Sorted molecules can be visualized with the `PlotSM` function.  
+```{r}
+PlotSM(MethSM = Methylation[[2]], RegionOfInterest = RegionOfInterest, sorting.strategy = "classical", SortedReads = SortedReads)
+```
+
+A corresponding barplot can be obtained through the `StateQuantificationPlot` or the `SingleTFStateQuantificationPlot` which hard-codes the `states` parameter.  
+```{r}
+StateQuantificationPlot(SortedReads = SortedReads, states = SingleTFStates())
+```
+
+## Sorting by TF clusters
+```{r, eval=FALSE, echo=FALSE}
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+
+Methylation = CallContextMethylation(
+  sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_AllCanWGpooled_dprm_DE_only.txt", samples = "SMF_MM_TKO_DE_", genome = BSgenome.Mmusculus.UCSC.mm10,
+  RegionOfInterest = RegionOfInterest, coverage = 20, ConvRate.thr = NULL, returnSM = TRUE, clObj = NULL, verbose = FALSE
+)
+qs::qsave(Methylation, "../inst/extdata/Methylation_4.qs")
+```
+
+Similarly to single TFs, sorting by TF motif clusters requires designing bins. Here we draw a [-7;+7] bin around each TF motif, a [-35;-25] bin relative to the most upstream TF motif and a [+25,+35] bin relative to the center of the most downstream TFBS, for a total of $n+2$ bins, with $n$ being the number of TF motifs.  
+Here we exemplify the process manually for clarity.  
+```{r, eval=TRUE}
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+
+motif_center_1 = start(IRanges::resize(TFBSs[1], 1, "center"))
+motif_center_2 = start(IRanges::resize(TFBSs[2], 1, "center"))
+SortingBins = c(
+  GRanges("chr6", IRanges(motif_center_1-35, motif_center_1-25)),
+  GRanges("chr6", IRanges(motif_center_1-7, motif_center_1+7)),
+  GRanges("chr6", IRanges(motif_center_2-7, motif_center_2+7)),
+  GRanges("chr6", IRanges(motif_center_2+25, motif_center_2+35))
+)
+
+PlotAvgSMF(
+  MethGR = Methylation[[1]], RegionOfInterest = RegionOfInterest, TFBSs = TFBSs, SortingBins = SortingBins
+)
+```
+
+Sorting molecules involves averaging, for each molecule, the binary methylation values for the cytosines overlapping those bins.  
+Reducing those averages to integers summarises each molecule to three binary digits.  
+We sort and plot molecules based on these digits.  
+The whole process is wrapped in the `SortReadsByTFCluster` function.  
+```{r, eval=TRUE}
+SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
+```
+N.b.: custom bins can be used by through the argument `bins`.  
+
+The function returns a list with one item per sample.  
+Each of these is itself a list of up to 16 items, one per possible combination of three binary digits, i.e. 0000, 0001, 0010, etc.  
+Each of these items contains the IDs of the molecules sorted.  
+N.b.: patterns with 0 molecules will not be reported.   
+```{r}
+lapply(SortedReads$SMF_MM_TKO_DE_, head, 2)
+```
+
+The number of molecules per pattern can be checked using `lenghts`.  
+```{r}
+lengths(SortedReads$SMF_MM_TKO_DE_)
+```
+Here most molecules show the 1001 pattern.  
+
+These patterns are not immediately human readable. For convenience we hard-coded a biological interpretation in the function `SingleTFStates`.  
+```{r}
+TFPairStates()
+```
+
+This function can be used together with the function `StateQuantification`, to compute the frequencies of the biological states associated with single TF binding.  
+The function `StateQuantificationByTFPair` hard-codes the `states` argument for convenience.  
+```{r}
+StateQuantification(SortedReads = SortedReads, states = TFPairStates())
+```
+
+Sorted molecules can be visualized with the `PlotSM` function.  
+```{r}
+PlotSM(MethSM = Methylation[[2]], RegionOfInterest = RegionOfInterest, sorting.strategy = "classical", SortedReads = SortedReads)
+```
+
+A corresponding barplot can be obtained through the `StateQuantificationPlot` or the `TFPairStateQuantificationPlot` which hard-codes the `states` parameter.  
+```{r}
+StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
+```
+
+## Genome-wide wrappers
+```{r, eval=FALSE, echo=FALSE}
+TFBSs_full_list %>%
+  plyranges::filter(seqnames == "chr19", TF == "KLF4", isBound) %>%
+  head(500) -> KLF4s
+elementMetadata(KLF4s) = NULL
+KLF4s$TF = "KLF4"
+qs::qsave(KLF4s, "../inst/extdata/KLF4_chr19.qs")
+```
+
+Performing genome-wide single molecule sorting involves calling methylation at the single molecule level for multiple loci of interest.  
+Let's say we wanted to sort single molecules around the first 500 bound KLF4 motifs in chr19.  
+```{r}
+KLF4s = qs::qread(system.file("extdata", "KLF4_chr19.qs", package="SingleMoleculeFootprinting"))
+KLF4s
+```
+
+Iterating linearly (or in parallel) across several hundreds of thousands of loci can take an impractically long time. This is why we prefer to call methylation at the single molecule level for up to Mb large genomic windows, for which memory requirements are still compatible with most computational infrastructures.  
+The function `Create_MethylationCallingWindows` outputs a GRanges of large methylation calling windows encompassing multiple of the loci of interest passed as input.  
+```{r}
+Create_MethylationCallingWindows(RegionsOfInterest = KLF4s)
+```
+Used with default parameters, the function minimizes the number of methylation calling windows in output.  The parameters `max_intercluster_distance`, `max_window_width` and `min_cluster_width` can be tuned to customise this behavior.  
+
+However, sometimes this leads to highly disproportionate windows, very few of which will overlap with most of the `RegionsOfInterest`.  This in turn might cause disproportionate resource allocations during subsequent computations.  
+This is why the function can forced to output methylation calling windows encompassing an even number of RegionsOfInterest. The parameters `fix.window.size` and `max.window.size` can be used to tune this behavior.  
+```{r}
+Create_MethylationCallingWindows(
+  RegionsOfInterest = KLF4s, 
+  fix.window.size = TRUE, max.window.size = 50
+  )
+```
+
+In case of single molecule sorting by TFBS clusters, it is useful to define the motif clusters ahead of the generation of methylation calling windows.  
+The function `Arrange_TFBSs_clusters` groups TF motifs by proximity and returns two objects:  
+`ClusterCoordinates`, which can be input directly to `Create_MethylationCallingWindows`
+`ClusterComposition` which can be fed to one of the single molecule sorting functions.  
+```{r}
+KLF4_clusters = Arrange_TFBSs_clusters(TFBSs = KLF4s)
+KLF4_clusters$ClusterCoordinates
+KLF4_clusters$ClusterComposition
+```
+The function can be tuned using the parameters `max_intersite_distance`, `min_intersite_distance`, `max_cluster_size` and `max_cluster_width`.  
+
+Finally, we provide two convenience wrappers to conduct genome-wide single molecule sorting: `SortReadsBySingleTF_MultiSiteWrapper` and `SortReadsByTFCluster_MultiSiteWrapper`.  
+Both functions automate the tasks of arranging TFBSs into clusters (if necessary), creating methylation calling windows, calling methylation, sorting molecules and calculating state frequencies.  
+The relevant arguments of all the inner functions are available for tuning.  
 ```{r, eval=FALSE}
-PlotSingleSiteSMF(ContextMethylation = Methylation, 
-                  sample = MySample, 
-                  range = Region_of_interest, 
-                  SortedReads = SortedReads, 
-                  TFBSs = TFBSs, 
-                  saveAs = NULL)
+SortReadsBySingleTF_MultiSiteWrapper(
+  sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_AllCanWGpooled_dprm_DE_only.txt", 
+  samples = "SMF_MM_TKO_DE_", 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  coverage = 20, ConvRate.thr = NULL, 
+  CytosinesToMask = NULL,
+  TFBSs = KLF4s, 
+  max_interTF_distance = NULL, max_window_width = NULL, min_cluster_width = NULL, 
+  fix.window.size = TRUE, max.window.size = 50, 
+  cores = 4
+) -> sorting_results
+```
+
+```{r, echo=FALSE, eval=FALSE}
+qs::qsave(sorting_results, "../inst/extdata/gw_sorting.qs")
+```
+
+The function outputs a list of three objects: the TFBSs (or TFBS clusters) used to sort, sorted molecules and a data.frame with sorting results.  
+```{r}
+sorting_results = qs::qread(system.file("extdata", "gw_sorting.qs", package="SingleMoleculeFootprinting"))
+sorting_results[[1]]
+# sorting_results[[2]]
+sorting_results[[3]]
+```
+The function `SortReadsByTFCluster_MultiSiteWrapper` works analogously, with the addition of arranging TFBS clusters according to parameters
+```{r, eval=FALSE}
+SortReadsByTFCluster_MultiSiteWrapper(
+  ..., 
+  max_intersite_distance = , min_intersite_distance = , max_cluster_size = , max_cluster_width = ,
+  ...
+)
 ```
 
 ## sessionInfo

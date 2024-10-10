@@ -4,12 +4,10 @@
 \alias{TFPairStateQuantificationPlot}
 \title{TF pair state quantification bar}
 \usage{
-TFPairStateQuantificationPlot(SortedReads, states)
+TFPairStateQuantificationPlot(SortedReads)
 }
 \arguments{
-\item{SortedReads}{List of sorted reads (can be multiple samples) as returned by SortReadsByTFCluster (or SortReads run with analogous parameters)}
-
-\item{states}{as returned by TFpairStates function}
+\item{SortedReads}{Sorted reads as returned by SortReadsByTFCluster}
 }
 \description{
 TF pair state quantification bar

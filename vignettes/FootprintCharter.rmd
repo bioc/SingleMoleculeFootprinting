@@ -1,0 +1,39 @@
+---
+title: "single_molecule_sorting_by_TF"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    highlight: tango
+vignette: >
+  %\VignetteIndexEntry{SingleMoleculeFootprinting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  # comment = "#>", 
+  tidy = FALSE, 
+  cache = FALSE, 
+  results = 'markup'
+)
+```
+
+## Introduction
+This vignette exemplifies how to perform unsupervised footprint detection and quantification using *FootprintCharter* as per [Baderna & Barzaghi et al., 2024]() and [Barzaghi et al., 2024]().  
+
+The idea is to partition molecules by their methylation patterns without relying on orthogonal genomic annotations such as TF motifs.  
+
+## Loading libraries
+```{r setup, message=FALSE}
+suppressWarnings(library(SingleMoleculeFootprinting))
+suppressWarnings(library(BSgenome.Mmusculus.UCSC.mm10))
+```
+
+## sessionInfo
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```

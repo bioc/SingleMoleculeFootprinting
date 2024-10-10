@@ -29,10 +29,10 @@ Starting from an aligned bam file, we show how to
 
 * perform sequencing QCs
 * call methylation in bulk and at single molecule level
-* perform single molecule TF sorting as per [Sönmezer et al., 2021](https://doi.org/10.1016/j.molcel.2020.11.015)
+* perform single molecule TF sorting as per [Sönmezer et al., 2021](https://doi.org/10.1016/j.molcel.2020.11.015) and [Kleinendorst & Barzaghi et al., 2021](https://doi.org/10.1038/s41596-021-00630-1)
 * plot SMF
 * run genome-wide analyses
-* run FootprintCharter as per [Barzaghi & Baderna et al., 2024]()
+* run *FootprintCharter* as per [Baderna & Barzaghi et al., 2024]() and [Barzaghi et al., 2024]()
 
 For installation, the user can use the following:
 ```{r, eval=FALSE}
@@ -428,7 +428,7 @@ This amplicon is not particularly affected by PCR artifacts.
 
 ### Genetic variation analysis
 
-In [Barzaghi & Baderna et al., 2024](), two F1 mESC lines where obtained by crossing the reference laboratory strain Bl6 with Cast and Spret respectively. 
+In [Baderna & Barzaghi et al., 2024](), two F1 mESC lines where obtained by crossing the reference laboratory strain Bl6 with Cast and Spret respectively. 
 
 In such cases of genetic variation SMF data, it is useful to plot SNPs disrupting TFBSs. This can be done by using a GRanges object.  
 N.b.: this GRanges should be already subset for the SNPs overlapping the region of interest.  
