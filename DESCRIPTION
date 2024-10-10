@@ -19,7 +19,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-7800-3848"))
     )
 Depends:
-  R (>= 4.1.0)
+  R (>= 4.4.1)
 Imports:
     BiocGenerics,
     Biostrings,
@@ -46,7 +46,7 @@ Imports:
     tidyverse,
     qs,
 	  viridis
-Description: SingleMoleculeFootprinting is an R package providing functions 
+Description: SingleMoleculeFootprinting provides functions 
     to analyze Single Molecule Footprinting (SMF) data. 
     Following the workflow exemplified in its vignette, 
     the user will be able to perform basic data analysis 
