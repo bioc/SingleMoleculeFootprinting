@@ -17,3 +17,11 @@ tibble with state frequency information
 \description{
 Convenience for calculating state frequencies
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
+StateQuantification(SortedReads = SortedReads, states = SingleTFStates())
+
+}

@@ -26,3 +26,12 @@ MaskSNPs(
 \description{
 Utility function to remove cytosines whose MTase target genomic context is affected by SNPs
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", package="SingleMoleculeFootprinting"))
+CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", package="SingleMoleculeFootprinting"))
+
+MaskSNPs(Methylation = Methylation, CytosinesToMask = CytosinesToMask, MaskSMmat = FALSE, 
+SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), Experiment = "DE") -> Methylation_masked
+
+}

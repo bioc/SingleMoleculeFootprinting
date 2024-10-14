@@ -174,6 +174,13 @@ SortReadsByTFCluster = function(MethSM, TFBS_cluster, bins = list(c(-35,-25), c(
 #' 
 #' @export
 #' 
+#' @examples
+#' 
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
+#' StateQuantification(SortedReads = SortedReads, states = SingleTFStates())
+#' 
 StateQuantification = function(SortedReads, states){
   
   if(all(isEmpty(SortedReads))){
@@ -219,6 +226,13 @@ StateQuantification = function(SortedReads, states){
 #' 
 #' @export
 #' 
+#' @examples
+#' 
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
+#' StateQuantificationBySingleTF(SortedReads = SortedReads)
+#' 
 StateQuantificationBySingleTF = function(SortedReads){
   
   states = SingleTFStates()
@@ -236,6 +250,13 @@ StateQuantificationBySingleTF = function(SortedReads){
 #' @return tibble with state frequency information
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
+#' StateQuantificationByTFPair(SortedReads = SortedReads)
 #' 
 StateQuantificationByTFPair = function(SortedReads){
   

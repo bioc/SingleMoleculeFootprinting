@@ -36,3 +36,9 @@ The hits will be filtered for min_intersite_distance where, in case of overlappi
 These TFBSs plus the central "anchoring" one will define a TFBS cluster. 
 This approach implies that the same TFBS can be employed to design multiple clusters in a sliding-window fashion.
 }
+\examples{
+
+KLF4s = qs::qread(system.file("extdata", "KLF4_chr19.qs", package="SingleMoleculeFootprinting"))
+Arrange_TFBSs_clusters(KLF4s)
+
+}

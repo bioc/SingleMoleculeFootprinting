@@ -35,3 +35,9 @@ GRanges object of window coordinates to be used for more efficient calls of Call
 \description{
 Relevant for genome-wide analyses
 }
+\examples{
+
+KLF4s = qs::qread(system.file("extdata", "KLF4_chr19.qs", package="SingleMoleculeFootprinting"))
+Create_MethylationCallingWindows(RegionsOfInterest = KLF4s)
+
+}

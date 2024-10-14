@@ -15,3 +15,11 @@ tibble with state frequency information
 \description{
 wraps around StateQuantification function
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
+StateQuantificationByTFPair(SortedReads = SortedReads)
+
+}

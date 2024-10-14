@@ -214,7 +214,7 @@ Such composite methylation rate allows to assess the quality of footprinting at 
 
 The following chunk exemplifies how to proceed.  
 First we want to call methylation for the new low depth samples, paying attention to setting the parameter `coverage=1`.  
-Than we want to call methylation for a reference high coverage sample.  
+Then we want to call methylation for a reference high coverage sample.  
 Finally, we can use the wrapper function `CompositeMethylationCorrelation` to extract composite methylation rates.  
 N.b.: the methylation calling step is quite computationally demanding for full genomes, so we ran this in the background and reported the results only.
 ```{r, eval=FALSE}
@@ -424,7 +424,7 @@ PlotSM(
   sorting.strategy = "hierarchical.clustering"
   )
 ```
-This amplicon is not particularly affected by PCR artifacts.
+This amplicon is not particularly affected by PCR artifacts. Had than been the case, this heatmap would show large blocks of perfectly duplicated methylation patterns across molecules.  
 
 ### Genetic variation analysis
 

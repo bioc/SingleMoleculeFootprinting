@@ -90,6 +90,14 @@ cbind.fill.matrix.sparse = function(x,y){
 #' @param Experiment as detected by the DetectExperimentType() function. Should be either "DE" or "NO"
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", package="SingleMoleculeFootprinting"))
+#' CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", package="SingleMoleculeFootprinting"))
+#' 
+#' MaskSNPs(Methylation = Methylation, CytosinesToMask = CytosinesToMask, MaskSMmat = FALSE, 
+#' SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), Experiment = "DE") -> Methylation_masked
 #'
 MaskSNPs = function(Methylation, CytosinesToMask, MaskSMmat = FALSE, SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), Experiment){
   
@@ -190,6 +198,11 @@ MaskSNPs = function(Methylation, CytosinesToMask, MaskSMmat = FALSE, SampleStrin
 #' @return list with two elements: ClusterCoordinates (GRanges object of clusters coordinates) and ClusterComposition (GRangesList of sites for each cluster)
 #' 
 #' @export
+#' 
+#' @examples
+#'
+#' KLF4s = qs::qread(system.file("extdata", "KLF4_chr19.qs", package="SingleMoleculeFootprinting"))
+#' Arrange_TFBSs_clusters(KLF4s)
 #'
 Arrange_TFBSs_clusters = function(
     TFBSs, 
@@ -252,6 +265,11 @@ Arrange_TFBSs_clusters = function(
 #' @return GRanges object of window coordinates to be used for more efficient calls of CallContextMethylation 
 #' 
 #' @export
+#' 
+#' @examples
+#'
+#' KLF4s = qs::qread(system.file("extdata", "KLF4_chr19.qs", package="SingleMoleculeFootprinting"))
+#' Create_MethylationCallingWindows(RegionsOfInterest = KLF4s)
 #' 
 Create_MethylationCallingWindows = function(
     RegionsOfInterest, 
