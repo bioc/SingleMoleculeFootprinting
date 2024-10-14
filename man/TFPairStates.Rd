@@ -12,3 +12,8 @@ list of states
 \description{
 Design states for TF pair case
 }
+\examples{
+TFPairStates()
+
+
+}

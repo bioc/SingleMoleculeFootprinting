@@ -5,6 +5,11 @@
 #' @importFrom tidyr unite
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' SingleTFStates()
+#' 
 #'
 SingleTFStates = function(){
 
@@ -25,12 +30,14 @@ SingleTFStates = function(){
 #'
 #' @return list of states
 #' 
-#' @export
-#' 
 #' @importFrom tidyr unite
 #' @importFrom stringr str_split
 #' 
 #' @export
+#' 
+#' @examples
+#' TFPairStates()
+#' 
 #' 
 TFPairStates = function(){
 

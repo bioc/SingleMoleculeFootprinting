@@ -17,6 +17,19 @@
 #' @return data.frame of bulk SMF info ready for plotting
 #'
 #' @export
+#' 
+#' @examples
+#' 
+#' CollectCompositeData(
+#' sampleFile = sampleFile, 
+#' samples = samples, 
+#' genome = BSgenome.Mmusculus.UCSC.mm10, 
+#' TFBSs = TopMotifs, 
+#' window = 1000, 
+#' coverage = 20, 
+#' ConvRate.thr = NULL, 
+#' cores = 16
+#' ) -> CompositeData
 #'
 CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, coverage=20, ConvRate.thr = NULL, cores=1){
 
@@ -79,6 +92,10 @@ CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, cove
 #' @importFrom ggpointdensity geom_pointdensity
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
 #' 
 CompositePlot = function(CompositeData, span=0.1, TF){
   

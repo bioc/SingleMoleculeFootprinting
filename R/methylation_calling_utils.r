@@ -20,6 +20,10 @@ full.join.granges = function(MethGR1, MethGR2){
 #' 
 #' @export 
 #' 
+#' @examples
+#' 
+#' rbind.fill.matrix.sparse(MethSM_1, MethSM_2)
+#' 
 rbind.fill.matrix.sparse = function(x,y){
   
   ymiss = colnames(x)[which(is.na(match(colnames(x),colnames(y))))]
@@ -57,6 +61,10 @@ rbind.fill.matrix.sparse = function(x,y){
 #' @details N.b. only possible fill at the moment is 0
 #' 
 #' @export 
+#' 
+#' @example
+#' 
+#' cbind.fill.matrix.sparse(MethSM_1. MethSM_2)
 #' 
 cbind.fill.matrix.sparse = function(x,y){
   

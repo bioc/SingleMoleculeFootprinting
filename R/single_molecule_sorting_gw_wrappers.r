@@ -32,6 +32,20 @@
 #' 
 #' @export
 #' 
+#' @examples
+#' 
+#' SortReadsBySingleTF_MultiSiteWrapper(
+#' sampleFile = "...", 
+#' samples = "...", 
+#' genome = BSgenome.Mmusculus.UCSC.mm10, 
+#' coverage = 20, ConvRate.thr = NULL, 
+#' CytosinesToMask = NULL,
+#' TFBSs = KLF4s, 
+#' max_interTF_distance = NULL, max_window_width = NULL, min_cluster_width = NULL, 
+#' fix.window.size = TRUE, max.window.size = 50, 
+#' cores = 4
+#' ) -> sorting_results
+#' 
 SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = NULL, # ---> parameters passed to CallContextMethylation
                                                  CytosinesToMask = NULL, TFBSs,
                                                  max_interTF_distance = 100000, max_window_width = 5000000, min_cluster_width = 600, fix.window.size = FALSE, max.window.size = NULL, # ---> parameters passed to Create_MethylationCallingWindows
@@ -151,6 +165,20 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
 #'                    [[3]] is a tibble reporting the count (and frequency) of reads per state, samples and TFBS cluster
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' SortReadsByTFCluster_MultiSiteWrapper(
+#' sampleFile = "...", 
+#' samples = "...", 
+#' genome = BSgenome.Mmusculus.UCSC.mm10, 
+#' coverage = 20, ConvRate.thr = NULL, 
+#' CytosinesToMask = NULL,
+#' TFBSs = KLF4s, 
+#' max_interTF_distance = NULL, max_window_width = NULL, min_cluster_width = NULL, 
+#' fix.window.size = TRUE, max.window.size = 50, 
+#' cores = 4
+#' ) -> sorting_results
 #' 
 SortReadsByTFCluster_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = 0.8, # ---> parameters passed to CallContextMethylation
                                                  CytosinesToMask = NULL,

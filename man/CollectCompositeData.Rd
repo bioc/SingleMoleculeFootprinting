@@ -38,3 +38,17 @@ data.frame of bulk SMF info ready for plotting
 \description{
 Collect bulk SMF data for later composite plotting
 }
+\examples{
+
+CollectCompositeData(
+sampleFile = sampleFile, 
+samples = samples, 
+genome = BSgenome.Mmusculus.UCSC.mm10, 
+TFBSs = TopMotifs, 
+window = 1000, 
+coverage = 20, 
+ConvRate.thr = NULL, 
+cores = 16
+) -> CompositeData
+
+}

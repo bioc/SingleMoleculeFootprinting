@@ -17,3 +17,8 @@ Implementation performing a similar operation of plyr::rbind.fill.matrix but for
 \details{
 N.b. only possible fill at the moment is 0
 }
+\examples{
+
+rbind.fill.matrix.sparse(MethSM_1, MethSM_2)
+
+}

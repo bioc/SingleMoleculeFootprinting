@@ -21,3 +21,9 @@ Strand collapsed MethSM
 \description{
 The idea here is that (regardless of context) if a C is on the - strand, calling getSeq on that coord (N.b. unstranded, that's the important bit) will give a "G', a "C" if it's a + strand.
 }
+\examples{
+
+CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
+
+
+}

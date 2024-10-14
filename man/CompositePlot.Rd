@@ -14,3 +14,8 @@ CompositePlot(CompositeData, span = 0.1, TF)
 \description{
 Will use geom_point with <= 5000 points, geom_hex otherwise
 }
+\examples{
+
+CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
+
+}

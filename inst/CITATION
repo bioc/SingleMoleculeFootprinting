@@ -1,0 +1,14 @@
+citEntry(entry="article",
+         title = "Genome-wide quantification of transcription factor binding at single DNA molecule resolution using methyl-transferase footprinting",
+         author = personList( as.person("Rozemarijn W.D. Kleinendorst"),
+                              as.person("Guido Barzaghi"),
+                              as.person("Mike L. Smith"),
+                              as.person("Judith B. Zaugg"),
+                              as.person("Arnaud R. Krebs")),
+         year = 2021,
+         journal = "Nature Protocols",
+         doi = "10.1038/s41596-021-00630-1",
+         textVersion = 
+           paste("Rozemarijn W.D. Kleinendorst, Guido Barzaghi, Mike L. Smith, Judith B. Zaugg, Arnaud R. Krebs", 
+                 "Genome-wide quantification of transcription factor binding at single DNA molecule resolution using methyl-transferase footprinting",
+                 "Nature Protocols 16, 5673-5706 (2021)"))

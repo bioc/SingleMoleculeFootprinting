@@ -17,3 +17,8 @@ MethGR with collapsed strands (everything turned to - strand)
 \description{
 Collapse strands
 }
+\examples{
+CollapseStrands(MethGR, "GC")
+
+
+}

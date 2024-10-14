@@ -253,6 +253,10 @@ FilterContextCytosines = function(MethGR, genome, context){
 #' @return MethGR with collapsed strands (everything turned to - strand)
 #' 
 #' @export
+#' 
+#' @examples
+#' CollapseStrands(MethGR, "GC")
+#' 
 #'
 CollapseStrands = function(MethGR, context){
 
@@ -308,6 +312,11 @@ CollapseStrands = function(MethGR, context){
 #' @return Strand collapsed MethSM
 #' 
 #' @export
+#' 
+#' @examples
+#' 
+#' CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
+#' 
 #'
 CollapseStrandsSM = function(MethSM, context, genome, chr){
 
@@ -417,8 +426,6 @@ MergeMatrixes = function(matrixes){
 #'
 #' Can deal with multiple samples
 #'
-#' @export
-#'
 #' @param sampleFile QuasR pointer file
 #' @param samples vector of unique sample names corresponding to the SampleName field from the sampleFile
 #' @param genome BSgenome
@@ -437,6 +444,8 @@ MergeMatrixes = function(matrixes){
 #' 
 #' @details The ConvRate.thr argument should be used with care as it could create biases (e.g. when only one C out of context is present) while generally only marginally cleaning up the data. 
 #'
+#' @export
+#' 
 #' @examples
 #'
 #' samples <- suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")[[2]]))

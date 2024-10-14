@@ -12,3 +12,9 @@ list of states
 \description{
 Hard-coded interpretation of biological states from single TF sorting
 }
+\examples{
+
+SingleTFStates()
+
+
+}
