@@ -16,7 +16,9 @@ Get QuasRprj
 }
 \examples{
 
-Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+library(BSgenome.Mmusculus.UCSC.mm10)
+CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
+sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+QuasRprj = GetQuasRprj(sampleFile, BSgenome.Mmusculus.UCSC.mm10)
 
 }

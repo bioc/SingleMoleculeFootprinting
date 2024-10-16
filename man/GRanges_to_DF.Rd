@@ -7,7 +7,7 @@
 GRanges_to_DF(GRanges_obj)
 }
 \arguments{
-\item{Single}{GRanges object as returned by CallContextMethylation function}
+\item{GRanges_obj}{GRanges object as returned by CallContextMethylation function}
 }
 \description{
 Inner utility for LowCoverageMethRateDistribution

@@ -23,7 +23,7 @@ The idea here is that (regardless of context) if a C is on the - strand, calling
 }
 \examples{
 
-CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
+# CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
 
 
 }

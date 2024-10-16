@@ -7,9 +7,9 @@
 SubsetGRangesForSamples(GRanges_obj, Samples)
 }
 \arguments{
-\item{Samples}{vector of sample names as they appear in the SampleName field of the QuasR sampleFile}
+\item{GRanges_obj}{GRanges object as returned by CallContextMethylation function}
 
-\item{Single}{GRanges object as returned by CallContextMethylation function}
+\item{Samples}{vector of sample names as they appear in the SampleName field of the QuasR sampleFile}
 }
 \description{
 Inner utility for LowCoverageMethRateDistribution

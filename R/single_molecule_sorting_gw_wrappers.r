@@ -34,9 +34,11 @@
 #' 
 #' @examples
 #' 
+#' sampleFile = NULL
+#' if(!is.null(sampleFile)){
 #' SortReadsBySingleTF_MultiSiteWrapper(
-#' sampleFile = "...", 
-#' samples = "...", 
+#' sampleFile = sampleFile, 
+#' samples = samples, 
 #' genome = BSgenome.Mmusculus.UCSC.mm10, 
 #' coverage = 20, ConvRate.thr = NULL, 
 #' CytosinesToMask = NULL,
@@ -45,6 +47,7 @@
 #' fix.window.size = TRUE, max.window.size = 50, 
 #' cores = 4
 #' ) -> sorting_results
+#' }
 #' 
 SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = NULL, # ---> parameters passed to CallContextMethylation
                                                  CytosinesToMask = NULL, TFBSs,
@@ -143,6 +146,8 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
 #' @param min_intersite_distance minimum allowed distance in base pairs between two TFBS centers for them not to be discarded as overlapping. 
 #'                               This parameter should be set according to the width of the bins used for later sorting. Defaults to 15.
 #' @param max_cluster_size maximum number of TFBSs to be contained in any given cluster. Defaults to 10
+#' @param max_cluster_width maximum cluster width in bp. Defaults to 300
+#' @param add.single.TFs whether to add to output the TFBSs that didn't make it into clusters. Defaults to TRUE
 #' @param max_intercluster_distance maximum distance between two consecutive TFBS clusters for them to be grouped in the same window
 #' @param max_window_width upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call
 #' @param min_cluster_width lower limit to window width. Corresponds to the scenario when a window contains a single TFBS cluster.
@@ -168,9 +173,11 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
 #' 
 #' @examples
 #' 
+#' sampleFile = NULL
+#' if(!is.null(sampleFile)){
 #' SortReadsByTFCluster_MultiSiteWrapper(
-#' sampleFile = "...", 
-#' samples = "...", 
+#' sampleFile = sampleFile, 
+#' samples = samples, 
 #' genome = BSgenome.Mmusculus.UCSC.mm10, 
 #' coverage = 20, ConvRate.thr = NULL, 
 #' CytosinesToMask = NULL,
@@ -179,6 +186,7 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
 #' fix.window.size = TRUE, max.window.size = 50, 
 #' cores = 4
 #' ) -> sorting_results
+#' }
 #' 
 SortReadsByTFCluster_MultiSiteWrapper = function(sampleFile, samples, genome, coverage = 20, ConvRate.thr = 0.8, # ---> parameters passed to CallContextMethylation
                                                  CytosinesToMask = NULL,

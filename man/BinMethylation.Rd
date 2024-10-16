@@ -19,14 +19,24 @@ Summarize methylation inside sorting bins
 }
 \examples{
 
-TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-elementMetadata(TFBSs)$name = c("NRF1")
-names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+library(IRanges)
+library(GenomicRanges)
 
-TFBS_center = start(TFBS) + (end(TFBS)-start(TFBS))/2
-BinsCoordinates = IRanges(start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
-                          end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2]))
+MethSM = qs::qread(system.file("extdata", "Methylation_4.qs", 
+package="SingleMoleculeFootprinting"))[[2]]$SMF_MM_TKO_DE_
 
-binMethylationValues = BinMethylation(MethSM = MethSM, Bin = BinsCoordinates[1])
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+package="SingleMoleculeFootprinting"))
+
+motif_center_1 = start(IRanges::resize(TFBSs[1], 1, "center"))
+motif_center_2 = start(IRanges::resize(TFBSs[2], 1, "center"))
+SortingBins = c(
+GRanges("chr6", IRanges(motif_center_1-35, motif_center_1-25)),
+GRanges("chr6", IRanges(motif_center_1-7, motif_center_1+7)),
+GRanges("chr6", IRanges(motif_center_2-7, motif_center_2+7)),
+GRanges("chr6", IRanges(motif_center_2+25, motif_center_2+35))
+)
+
+binMethylationValues = BinMethylation(MethSM = MethSM, Bin = SortingBins[1])
 
 }

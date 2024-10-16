@@ -1,5 +1,5 @@
 ---
-title: "single_molecule_sorting_by_TF"
+title: "FootprintCharter"
 output: 
   html_document:
     toc: true
@@ -7,7 +7,7 @@ output:
     toc_depth: 4
     highlight: tango
 vignette: >
-  %\VignetteIndexEntry{SingleMoleculeFootprinting}
+  %\VignetteIndexEntry{FootprintCharter}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,13 +25,28 @@ knitr::opts_chunk$set(
 ## Introduction
 This vignette exemplifies how to perform unsupervised footprint detection and quantification using *FootprintCharter* as per [Baderna & Barzaghi et al., 2024]() and [Barzaghi et al., 2024]().  
 
-The idea is to partition molecules by their methylation patterns without relying on orthogonal genomic annotations such as TF motifs.  
+*FootprintCharter* partitions molecules by their methylation patterns without relying on orthogonal genomic annotations such as TF motifs.  
 
 ## Loading libraries
 ```{r setup, message=FALSE}
 suppressWarnings(library(SingleMoleculeFootprinting))
 suppressWarnings(library(BSgenome.Mmusculus.UCSC.mm10))
 ```
+
+##
+```{r}
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+
+PlotAvgSMF(MethGR = Methylation[[1]], RegionOfInterest = RegionOfInterest, TFBSs = TFBSs)
+```
+
+
+```{r}
+MethSM = Methylation[[2]]
+```
+
 
 ## sessionInfo
 ```{r sessionInfo, echo=FALSE}

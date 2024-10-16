@@ -46,9 +46,8 @@ The ConvRate.thr argument should be used with care as it could create biases (e.
 }
 \examples{
 
-samples <- suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")[[2]]))
-RegionOfInterest <- GRanges("chr6", IRanges(88106000, 88106500))
-
+sampleFile = NULL
+if(!is.null(sampleFile)){
 Methylation <- CallContextMethylation(
   sampleFile = sampleFile, 
   samples = samples, 
@@ -57,7 +56,8 @@ Methylation <- CallContextMethylation(
   coverage = 20, 
   returnSM = TRUE,
   ConvRate.thr = NULL,
-  clObj = NULL # N.b.: when returnSM = TRUE, clObj should be set to NULL
+  clObj = NULL
 )
+}
 
 }

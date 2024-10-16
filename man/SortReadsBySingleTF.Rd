@@ -31,10 +31,11 @@ Wrapper to SortReads for single TF case
 }
 \examples{
 
-TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-elementMetadata(TFBSs)$name = c("NRF1")
-names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", 
+package="SingleMoleculeFootprinting"))
 
-SortedReads = SortReadsBySingleTF(MethSM = MethSM, TFBS = TFBSs)
+SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 
 }

@@ -40,6 +40,8 @@ Collect bulk SMF data for later composite plotting
 }
 \examples{
 
+sampleFile = NULL
+if(!is.null(sampleFile)){
 CollectCompositeData(
 sampleFile = sampleFile, 
 samples = samples, 
@@ -50,5 +52,6 @@ coverage = 20,
 ConvRate.thr = NULL, 
 cores = 16
 ) -> CompositeData
+}
 
 }

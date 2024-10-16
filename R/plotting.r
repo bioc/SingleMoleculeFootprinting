@@ -19,28 +19,22 @@
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' Methylation = CallContextMethylation(sampleSheet = Qinput,
-#'                                      sample = MySample,
-#'                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-#'                                      range = Region_of_interest,
-#'                                      coverage = 20,
-#'                                      ConvRate.thr = 0.2)
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+#' library(GenomicRanges)
 #'
-#' PlotAvgSMF(MethGR = Methylation[[1]], Region_of_interest = Region_of_interest, TFBSs = TFBSs)
+#' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#'
+#' PlotAvgSMF(MethGR = Methylation[[1]], RegionOfInterest = RegionOfInterest, TFBSs = TFBSs)
 #'
 PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, ShowContext=FALSE, TFBSs=NULL, SNPs=NULL, SortingBins=NULL){
 
   # Prepare SMF data
   MethGR %>%
     as_tibble() %>%
-    select(-grep("_Coverage$", colnames(.)), -end, -width, -strand) %>%
-    gather(sample, MethRate, -seqnames, -start, -GenomicContext) %>%
+    dplyr::select(-grep("_Coverage$", colnames(.)), -.data$end, -.data$width, -.data$strand) %>%
+    gather(sample, MethRate, -.data$seqnames, -.data$start, -.data$GenomicContext) %>%
     na.omit() -> PlottingDF
   
   if (any(stringr::str_detect(colnames(values(MethGR)), "^A_|^R_"))){
@@ -78,7 +72,7 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
   if(!is.null(TFBSs)){
     TFBSs %>%
       as_tibble() %>%
-      select(start, end, TF) -> TFBS_PlottingDF
+      dplyr::select(.data$start, .data$end, .data$TF) -> TFBS_PlottingDF
   }
 
   # Prepare SNPs
@@ -86,8 +80,8 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
     SNPs %>%
       as_tibble() %>%
       rowwise() %>%
-      mutate(width = ifelse(max(nchar(R), nchar(A)) == 1, 3, max(nchar(R), nchar(A)))) %>%
-      select(start, width) %>%
+      mutate(width = ifelse(max(nchar(.data$R), nchar(.data$A)) == 1, 3, max(nchar(.data$R), nchar(.data$A)))) %>%
+      dplyr::select(.data$start, .data$width) %>%
       mutate(y_coord = -0.13) -> SNPs_PlottingDF
   }
 
@@ -95,17 +89,17 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
   if(!is.null(SortingBins)){
     SortingBins %>%
       as.data.frame() %>%
-      select(start, end) -> Bins_PlottingDF
+      select(.data$start, .data$end) -> Bins_PlottingDF
   }
 
   PlottingDF %>%
-    ggplot(aes(x=start, y=1-MethRate, color=sample)) +
+    ggplot(aes(x=.data$start, y=1-.data$MethRate, color=.data$sample)) +
     geom_line() +
-    {if(ShowContext){geom_point(aes(shape=GenomicContext))}else{geom_point()}} +
-    {if(!is.null(TFBSs)){geom_rect(TFBS_PlottingDF, mapping = aes(xmin=start, xmax=end, ymin=-0.09, ymax=-0.04), inherit.aes = FALSE)}} +
-    {if(!is.null(TFBSs)){ggrepel::geom_text_repel(TFBS_PlottingDF, mapping = aes(x=start+((end-start)/2), y=-0.02, label=TF), min.segment.length = .1, max.overlaps = 1e+05, inherit.aes = FALSE)}} + #, size=4.5
-    {if(!is.null(SNPs)){geom_tile(SNPs_PlottingDF, mapping = aes(x=start, y=y_coord, width=width), color = ColorsToUse[2], fill = ColorsToUse[2], height = 0.05, inherit.aes = FALSE)}} +
-    {if(!is.null(SortingBins)){geom_rect(Bins_PlottingDF, mapping = aes(xmin=start, xmax=end, ymin=-0.02, ymax=0), color="black", fill="white", inherit.aes = FALSE)}} +
+    {if(ShowContext){geom_point(aes(shape=.data$GenomicContext))}else{geom_point()}} +
+    {if(!is.null(TFBSs)){geom_rect(TFBS_PlottingDF, mapping = aes(xmin=.data$start, xmax=.data$end, ymin=-0.09, ymax=-0.04), inherit.aes = FALSE)}} +
+    {if(!is.null(TFBSs)){ggrepel::geom_text_repel(TFBS_PlottingDF, mapping = aes(x=.data$start+((.data$end-.data$start)/2), y=-0.02, label=.data$TF), min.segment.length = .1, max.overlaps = 1e+05, inherit.aes = FALSE)}} +
+    {if(!is.null(SNPs)){geom_tile(SNPs_PlottingDF, mapping = aes(x=.data$start, y=.data$y_coord, width=.data$width), color = ColorsToUse[2], fill = ColorsToUse[2], height = 0.05, inherit.aes = FALSE)}} +
+    {if(!is.null(SortingBins)){geom_rect(Bins_PlottingDF, mapping = aes(xmin=.data$start, xmax=.data$end, ymin=-0.02, ymax=0), color="black", fill="white", inherit.aes = FALSE)}} +
     geom_hline(aes(yintercept=0)) +
     ylab("SMF") +
     xlab("") +
@@ -126,22 +120,19 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
 #' @import tidyverse
 #' @importFrom tibble rownames_to_column
 #' @importFrom stats na.omit
+#' @importFrom rlang .data
 #'
 #' @export
 #'
 #' @examples
+#' 
+#' library(GenomicRanges)
+#' 
+#' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' Methylation = CallContextMethylation(sampleSheet = Qinput,
-#'                                      sample = MySample,
-#'                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-#'                                      range = Region_of_interest,
-#'                                      coverage = 20,
-#'                                      ConvRate.thr = 0.2)
-#'
-#' PlotSingleMoleculeStack(MethSM = Methylation[[2]], RegionOfInterest = Region_of_interest)
+#' PlotSingleMoleculeStack(MethSM = Methylation[[2]], RegionOfInterest = RegionOfInterest)
 #'
 PlotSingleMoleculeStack = function(MethSM, RegionOfInterest){
   
@@ -151,25 +142,25 @@ PlotSingleMoleculeStack = function(MethSM, RegionOfInterest){
       as.data.frame() %>%
       rownames_to_column(var = "ReadID") %>%
       mutate(Sample = names(MethSM)[i]) %>%
-      gather(Coordinate, Methylation, -ReadID, -Sample) %>%
-      mutate(Methylation = ifelse(Methylation == 0, NA, Methylation-1))
+      gather(Coordinate, Methylation, -.data$ReadID, -.data$Sample) %>%
+      mutate(Methylation = ifelse(.data$Methylation == 0, NA, .data$Methylation-1))
   })) %>%
     na.omit() %>%
-    mutate(Methylation = as.factor(Methylation), Coordinate = as.numeric(Coordinate)) -> PlottingDF
+    mutate(Methylation = as.factor(.data$Methylation), Coordinate = as.numeric(.data$Coordinate)) -> PlottingDF
   PlottingDF$ReadID = factor(PlottingDF$ReadID, levels = Reduce(c, lapply(MethSM, rownames)))
   
   PlottingDF %>%
-    group_by(Sample) %>%
-    summarise(NrReads = length(unique(ReadID))) %>%
+    group_by(.data$Sample) %>%
+    summarise(NrReads = length(unique(.data$ReadID))) %>%
     ungroup() %>%
-    mutate(Label = paste0(Sample, " (", NrReads, " reads)")) %>%
-    select(Sample, Label) -> Labels
+    mutate(Label = paste0(Sample, " (", .data$NrReads, " reads)")) %>%
+    dplyr::select(.data$Sample, .data$Label) -> Labels
   names(Labels$Label) = Labels$Sample
 
   PlottingDF %>%
-    ggplot(aes(x=Coordinate, y=ReadID)) + 
-    geom_tile(aes(fill=Methylation), height=1, width=5) +
-    facet_wrap(~Sample, scales = "free_y", dir = 'v', 
+    ggplot(aes(x=.data$Coordinate, y=.data$ReadID)) + 
+    geom_tile(aes(fill=.data$Methylation), height=1, width=5) +
+    facet_wrap(~.data$Sample, scales = "free_y", dir = 'v', 
                labeller = as_labeller(Labels$Label)) +
     ylab("") +
     xlab("") +
@@ -217,18 +208,17 @@ PlotSingleMoleculeStack = function(MethSM, RegionOfInterest){
 #' @export
 #'
 #' @examples
+#' 
+#' library(GenomicRanges)
+#' 
+#' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' Methylation = CallContextMethylation(sampleSheet = Qinput,
-#'                                      sample = MySample,
-#'                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-#'                                      RegionOfInterest = Region_of_interest,
-#'                                      coverage = 20,
-#'                                      ConvRate.thr = 0.2)
-#'
-#'  PlotSM(MethSM = Methylation[[2]], RegionOfInterest = Region_of_interest)
+#' PlotSM(MethSM = Methylation[[2]], RegionOfInterest = RegionOfInterest, SortedReads = SortedReads)
 #'
 PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", SortedReads = NULL){
   
@@ -287,32 +277,27 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
 #' @return Bar plot quantifying states
 #' 
 #' @import dplyr
+#' @importFrom rlang .data
 #'
 #' @export
 #'
 #' @examples
+#' 
+#' library(GenomicRanges)
+#' 
+#' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' Methylation = CallContextMethylation(sampleSheet = Qinput,
-#'                                      sample = MySample,
-#'                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-#'                                      range = Region_of_interest,
-#'                                      coverage = 20,
-#'                                      ConvRate.thr = 0.2)
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-#' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
-#'
-#' StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
+#' StateQuantificationPlot(SortedReads = SortedReads, states = SingleTFStates())
 #'
 StateQuantificationPlot = function(SortedReads, states){
   
   if(states[[1]] == "101"){
     states_df = unique(gather(as_tibble(states), "State", "Pattern")) %>%
-      mutate(State = factor(State, levels = c("bound", "accessible", "closed", "unassigned")))
+      mutate(State = factor(.data$State, levels = c("bound", "accessible", "closed", "unassigned")))
   } else if (states[[1]] == "1001"){
     states_df = data.frame(
       State = rep(names(states), lengths(states)),
@@ -333,14 +318,14 @@ StateQuantificationPlot = function(SortedReads, states){
     )
   })) %>%
     left_join(., states_df, by = "Pattern") %>%
-    arrange(desc(State)) %>%
-    mutate(ReadID = factor(ReadID, levels = ReadID)) -> PlottingDF
+    arrange(desc(.data$State)) %>%
+    mutate(ReadID = factor(.data$ReadID, levels = .data$ReadID)) -> PlottingDF
   
   if(states[[1]] == "101"){
     PlottingDF %>%
-      ggplot(aes(x=1, y=ReadID, fill=State)) + 
+      ggplot(aes(x=1, y=.data$ReadID, fill=.data$State)) + 
       geom_tile() +
-      facet_wrap(~Sample, scales = "free_y", dir = 'v') +
+      facet_wrap(~.data$Sample, scales = "free_y", dir = 'v') +
       ylab("") +
       xlab("") +
       scale_fill_manual(breaks = names(states), values = c("#984EA3", "#4DAF4A", "#377EB8", "#999999")) + 
@@ -348,11 +333,11 @@ StateQuantificationPlot = function(SortedReads, states){
       theme(axis.text=element_blank(), axis.ticks=element_blank(), axis.line = element_blank()) -> pl
   } else if (states[[1]] == "1001") {
     PlottingDF %>%
-      separate(Pattern, into = c(paste0("Bin", seq(unique(nchar(unlist(states)))))), sep = "(?<=.)", extra = 'drop') %>%
-      gather(Bin, Methylation, -ReadID, -Sample, -State) %>%
-      ggplot(aes(x=Bin, y=ReadID)) + 
-      geom_tile(aes(fill=Methylation), height=1, width=1) +
-      facet_wrap(~Sample, scales = "free_y", dir = 'v') +
+      separate(.data$Pattern, into = c(paste0("Bin", seq(unique(nchar(unlist(states)))))), sep = "(?<=.)", extra = 'drop') %>%
+      gather(Bin, Methylation, -.data$ReadID, -.data$Sample, -.data$State) %>%
+      ggplot(aes(x=.data$Bin, y=.data$ReadID)) + 
+      geom_tile(aes(fill=.data$Methylation), height=1, width=1) +
+      facet_wrap(~.data$Sample, scales = "free_y", dir = 'v') +
       ylab("") +
       xlab("") +
       scale_discrete_manual(aesthetics = "fill", values = c("black", "grey")) +
@@ -401,27 +386,19 @@ TFPairStateQuantificationPlot = function(SortedReads){
 #' @export
 #'
 #' @examples
+#' 
+#' library(GenomicRanges)
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' MySample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' Region_of_interest = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' Methylation = CallContextMethylation(sampleSheet = Qinput,
-#'                                      sample = MySample,
-#'                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-#'                                      range = Region_of_interest,
-#'                                      coverage = 20,
-#'                                      ConvRate.thr = 0.2)
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
-#' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBSs = TFBSs)
+#' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #'
-#' PlotSingleSiteSMF(ContextMethylation = Methylation,
-#'                   sample = MySample,
-#'                   range = Region_of_interest,
+#' PlotSingleSiteSMF(Methylation = Methylation,
+#'                   RegionOfInterest = RegionOfInterest,
 #'                   SortedReads = SortedReads,
-#'                   TFBSs = TFBSs,
-#'                   saveAs = NULL)
+#'                   TFBSs = TFBSs)
 #'
 PlotSingleSiteSMF = function(Methylation, RegionOfInterest, ShowContext=FALSE, TFBSs=NULL, SNPs=NULL, SortingBins=NULL, SortedReads=NULL, sorting.strategy = "None"){
 
@@ -441,7 +418,18 @@ PlotSingleSiteSMF = function(Methylation, RegionOfInterest, ShowContext=FALSE, T
   # State quantification plot
   if(is.list(SortedReads)){
     message("Producing state quantification plots")
-    StateQuantificationPlot(SortedReads = SortedReads) -> StateQuant_pl
+    
+    if(all(nchar(names(SortedReads[[1]])) == 3)){
+      states = SingleTFStates()
+      StateQuantificationPlot(SortedReads = SortedReads, states = states) -> StateQuant_pl
+    } else if(all(nchar(names(SortedReads[[1]])) == 4)){
+      states = TFPairStates()
+      StateQuantificationPlot(SortedReads = SortedReads, states = states) -> StateQuant_pl
+    } else {
+      message("No states recognised, skipping StateQuantificationPlot")
+      StateQuant_pl = NULL
+    }
+    
   } else {
     StateQuant_pl = NULL
   }

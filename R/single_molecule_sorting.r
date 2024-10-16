@@ -10,16 +10,26 @@
 #' @export
 #'
 #' @examples
+#' 
+#' library(IRanges)
+#' library(GenomicRanges)
 #'
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+#' MethSM = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))[[2]]$SMF_MM_TKO_DE_
 #'
-#' TFBS_center = start(TFBS) + (end(TFBS)-start(TFBS))/2
-#' BinsCoordinates = IRanges(start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
-#'                           end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2]))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+#' package="SingleMoleculeFootprinting"))
 #'
-#' binMethylationValues = BinMethylation(MethSM = MethSM, Bin = BinsCoordinates[1])
+#' motif_center_1 = start(IRanges::resize(TFBSs[1], 1, "center"))
+#' motif_center_2 = start(IRanges::resize(TFBSs[2], 1, "center"))
+#' SortingBins = c(
+#' GRanges("chr6", IRanges(motif_center_1-35, motif_center_1-25)),
+#' GRanges("chr6", IRanges(motif_center_1-7, motif_center_1+7)),
+#' GRanges("chr6", IRanges(motif_center_2-7, motif_center_2+7)),
+#' GRanges("chr6", IRanges(motif_center_2+25, motif_center_2+35))
+#' )
+#'
+#' binMethylationValues = BinMethylation(MethSM = MethSM, Bin = SortingBins[1])
 #'
 BinMethylation = function(MethSM, Bin){
 
@@ -51,16 +61,21 @@ BinMethylation = function(MethSM, Bin){
 #'
 #' @examples
 #'
-#' BinsCoord = list(c(-35,-25), c(-15,15), c(25,35))
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+#' library(IRanges)
 #'
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBS = qs::qread(system.file("extdata", "TFBSs_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' 
+#' bins = list(c(-35,-25), c(-15,15), c(25,35))
 #' TFBS_center = start(TFBS) + (end(TFBS)-start(TFBS))/2
-#' BinsCoordinates = IRanges(start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
-#'                           end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2]))
-#'
-#' SortedReads = SortReads(MethSM, BinsCoordinates)
+#' BinsCoordinates = IRanges(
+#' start = c(TFBS_center+bins[[1]][1], TFBS_center+bins[[2]][1], TFBS_center+bins[[3]][1]),
+#' end = c(TFBS_center+bins[[1]][2], TFBS_center+bins[[2]][2], TFBS_center+bins[[3]][2])
+#' )
+#' 
+#' SortedReads = SortReads(Methylation[[2]]$SMF_MM_TKO_DE_, BinsCoordinates, coverage = 20)
 #'
 SortReads = function(MethSM, BinsCoordinates, coverage=NULL){
 
@@ -107,11 +122,12 @@ SortReads = function(MethSM, BinsCoordinates, coverage=NULL){
 #'
 #' @examples
 #'
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106253), c(88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305216)))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", 
+#' package="SingleMoleculeFootprinting"))
 #'
-#' SortedReads = SortReadsBySingleTF(MethSM = MethSM, TFBS = TFBSs)
+#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #'
 SortReadsBySingleTF = function(MethSM, TFBS, bins = list(c(-35,-25), c(-15,15), c(25,35)), coverage = 20){
 
@@ -141,12 +157,13 @@ SortReadsBySingleTF = function(MethSM, TFBS, bins = list(c(-35,-25), c(-15,15), 
 #' @export
 #'
 #' @examples
+#' 
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+#' package="SingleMoleculeFootprinting"))
 #'
-#' TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106216, 88106253), c(88106226, 88106263)), strand = "-")
-#' elementMetadata(TFBSs)$name = c("NRF1", "NRF1")
-#' names(TFBSs) = c(paste0("TFBS_", c(4305215, 4305216)))
-#'
-#' SortedReads = SortReadsByTFCluster(MethSM = MethSM, TFBSs = TFBS_cluster)
+#' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
 #'
 SortReadsByTFCluster = function(MethSM, TFBS_cluster, bins = list(c(-35,-25), c(-7,7), c(25,35)), coverage = 30){
 
@@ -176,10 +193,12 @@ SortReadsByTFCluster = function(MethSM, TFBS_cluster, bins = list(c(-35,-25), c(
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
-#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
-#' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
-#' StateQuantification(SortedReads = SortedReads, states = SingleTFStates())
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
+#' StateQuantification(SortedReads = SortedReads, states = TFPairStates())
 #' 
 StateQuantification = function(SortedReads, states){
   
@@ -228,8 +247,10 @@ StateQuantification = function(SortedReads, states){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
-#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", 
+#' package="SingleMoleculeFootprinting"))
 #' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #' StateQuantificationBySingleTF(SortedReads = SortedReads)
 #' 
@@ -253,8 +274,10 @@ StateQuantificationBySingleTF = function(SortedReads){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
-#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+#' package="SingleMoleculeFootprinting"))
 #' SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
 #' StateQuantificationByTFPair(SortedReads = SortedReads)
 #' 

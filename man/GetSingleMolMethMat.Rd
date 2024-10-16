@@ -21,11 +21,16 @@ Used internally as the first step in CallContextMethylation
 }
 \examples{
 
-Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-sample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-range = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
+library(BSgenome.Mmusculus.UCSC.mm10)
+library(IRanges)
+library(GenomicRanges)
 
-MethSM = GetSingleMolMethMat(QuasRprj, range, sample)
+CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
+sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+sample = suppressMessages(readr::read_delim(sampleFile, delim = "\t")[[2]])
+QuasRprj = GetQuasRprj(sampleFile, BSgenome.Mmusculus.UCSC.mm10)
+range = GRanges("chr6", IRanges(88106000, 88106500))
+
+GetSingleMolMethMat(QuasRprj, range, sample)
 
 }

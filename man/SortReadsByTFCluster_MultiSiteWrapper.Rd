@@ -49,6 +49,10 @@ This parameter should be set according to the width of the bins used for later s
 
 \item{max_cluster_size}{maximum number of TFBSs to be contained in any given cluster. Defaults to 10}
 
+\item{max_cluster_width}{maximum cluster width in bp. Defaults to 300}
+
+\item{add.single.TFs}{whether to add to output the TFBSs that didn't make it into clusters. Defaults to TRUE}
+
 \item{max_intercluster_distance}{maximum distance between two consecutive TFBS clusters for them to be grouped in the same window}
 
 \item{max_window_width}{upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call}
@@ -78,9 +82,11 @@ The function starts from a list of single TFBSs, arranges them into clusters, ca
 }
 \examples{
 
+sampleFile = NULL
+if(!is.null(sampleFile)){
 SortReadsByTFCluster_MultiSiteWrapper(
-sampleFile = "...", 
-samples = "...", 
+sampleFile = sampleFile, 
+samples = samples, 
 genome = BSgenome.Mmusculus.UCSC.mm10, 
 coverage = 20, ConvRate.thr = NULL, 
 CytosinesToMask = NULL,
@@ -89,5 +95,6 @@ max_interTF_distance = NULL, max_window_width = NULL, min_cluster_width = NULL,
 fix.window.size = TRUE, max.window.size = 50, 
 cores = 4
 ) -> sorting_results
+}
 
 }

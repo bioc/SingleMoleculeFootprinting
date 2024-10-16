@@ -22,14 +22,13 @@ bait capture efficiency
 check bait capture efficiency. Expected to be ~70% for mouse genome
 }
 \examples{
-Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
-library(BSgenome.Mmusculus.UCSC.mm10)
 
-if(file.exists(Qinput)){
-    # clObj = parallel::makeCluster(5)
-    # BaitRegions = SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
-    # BaitCaptureEfficiency = BaitCapture(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions, clObj=clObj)
-    # parallel::stopCluster(clObj)
+sampleFile = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
+
+if(file.exists(sampleFile)){
+library(BSgenome.Mmusculus.UCSC.mm10)
+BaitRegions = SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
+BaitCapture(sampleFile = sampleFile, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions)
 }
 
 }

@@ -7,7 +7,7 @@ output:
     toc_depth: 4
     highlight: tango
 vignette: >
-  %\VignetteIndexEntry{SingleMoleculeFootprinting}
+  %\VignetteIndexEntry{single_molecule_sorting_by_TF}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

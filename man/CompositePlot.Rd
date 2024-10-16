@@ -10,12 +10,14 @@ CompositePlot(CompositeData, span = 0.1, TF)
 \item{CompositeData}{the output of the CollectCompositeData function}
 
 \item{span}{the span parameter to pass to geom_smooth}
+
+\item{TF}{string of TF name to use for plot title}
 }
 \description{
 Will use geom_point with <= 5000 points, geom_hex otherwise
 }
 \examples{
 
-CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
+# CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
 
 }

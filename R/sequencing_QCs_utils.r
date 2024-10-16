@@ -6,7 +6,7 @@
 #'
 #' Inner utility for LowCoverageMethRateDistribution
 #'
-#' @param Single GRanges object as returned by CallContextMethylation function
+#' @param GRanges_obj GRanges object as returned by CallContextMethylation function
 #' @param Samples vector of sample names as they appear in the SampleName field of the QuasR sampleFile
 #'
 #' @import GenomicRanges
@@ -27,29 +27,30 @@ SubsetGRangesForSamples = function(GRanges_obj, Samples){
 #'
 #' Inner utility for LowCoverageMethRateDistribution
 #'
-#' @param Single GRanges object as returned by CallContextMethylation function
+#' @param GRanges_obj GRanges object as returned by CallContextMethylation function
 #'
 #' @import dplyr
 #' @importFrom tidyr spread gather extract
 #' @importFrom stats na.omit
+#' @importFrom rlang .data
 #'
 GRanges_to_DF = function(GRanges_obj){
   
   GRanges_obj %>%
     as_tibble() %>%
-    select(matches("^seqnames$|^start$|_MethRate$|_Coverage$|^GenomicContext$|^Bins$")) %>%
-    gather(Sample, Score, -seqnames, -start, -GenomicContext, -Bins) %>%
+    dplyr::select(matches("^seqnames$|^start$|_MethRate$|_Coverage$|^GenomicContext$|^Bins$")) %>%
+    gather(Sample, Score, -.data$seqnames, -.data$start, -.data$GenomicContext, -.data$Bins) %>%
     na.omit() %>%
-    extract(Sample, c("Sample", "Measurement"), regex = "(.*)_(Coverage$|MethRate|)") %>%
-    spread(Measurement, Score) %>%
-    mutate(Methylated = Coverage*MethRate) %>%
-    group_by(Sample, GenomicContext, Bins) %>%
-    summarise(TotCoverage = sum(Coverage), TotMethylated = sum(Methylated), ObservedMeth = TotMethylated/TotCoverage) %>%
+    extract(.data$Sample, c("Sample", "Measurement"), regex = "(.*)_(Coverage$|MethRate|)") %>%
+    spread(.data$Measurement, .data$Score) %>%
+    mutate(Methylated = .data$Coverage*.data$MethRate) %>%
+    group_by(.data$Sample, .data$GenomicContext, .data$Bins) %>%
+    summarise(TotCoverage = sum(.data$Coverage), TotMethylated = sum(.data$Methylated), ObservedMeth = .data$TotMethylated/.data$TotCoverage) %>%
     ungroup() %>%
-    group_by(Sample, GenomicContext) %>%
+    group_by(.data$Sample, .data$GenomicContext) %>%
     mutate(ExpectedMeth = seq(1,100,100/dplyr::n())/100) %>%
     ungroup() %>%
-    select(-TotCoverage, -TotMethylated, -Bins) -> DF
+    select(-.data$TotCoverage, -.data$TotMethylated, -.data$Bins) -> DF
   
   return(DF)
   
@@ -59,14 +60,25 @@ GRanges_to_DF = function(GRanges_obj){
 # HighCoverage_MethRate_SampleCorrelation utils
 #
 
+#' Utility for HighCoverage_MethRate_SampleCorrelation
+#' 
+#' @param ... data for lower pairs panel
 #'
+#' @import graphics
+#' 
 #' @export
 #'
 panel.jet <- function(...) {
   jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan","#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
   smoothScatter(..., nrpoints=0, add=TRUE, colramp=jet.colors) }
 
+#' Utility for HighCoverage_MethRate_SampleCorrelation
+#' 
+#' @param x data for hist
+#' @param ... data for hist
 #'
+#' @import graphics
+#' 
 #' @export
 #'
 panel.hist <- function(x, ...){
@@ -78,11 +90,20 @@ panel.hist <- function(x, ...){
   rect(breaks[-nB], 0, breaks[-1], y, col="grey", ...)
 }
 
+#' Utility for HighCoverage_MethRate_SampleCorrelation
+#' 
+#' @param x x variable
+#' @param y y variable
+#' @param digits number of digits
+#' @param prefix string
+#' @param cex.cor graphical param
 #'
 #' @export
 #'
+#' @import graphics
 #' @importFrom IRanges cor
 #' @importFrom stats cor.test symnum
+#' 
 panel.cor <- function(x, y, digits=2, prefix="", cex.cor) {
   usr <- par("usr"); on.exit(par(usr))
   par(usr = c(0, 1, 0, 1))

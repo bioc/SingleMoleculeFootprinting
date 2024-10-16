@@ -65,8 +65,10 @@ TFPairStates = function(){
   
 }
 
-# string.split=function(string,sep,pos){unlist(lapply(string,function(x){lapply(strsplit(x,sep),'[',pos)}))}
+#' 
+string.split=function(string,sep,pos){unlist(lapply(string,function(x){lapply(strsplit(x,sep),'[',pos)}))}
 
+#' 
 SortReads_internal = function(SortedReads, SM_mat, isClusters){ # this orders readIDs based on arbotrary states order
 
   read_sort=SortedReads#[[1]]

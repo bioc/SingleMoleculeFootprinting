@@ -22,9 +22,15 @@ full.join.granges = function(MethGR1, MethGR2){
 #' 
 #' @examples
 #' 
-#' rbind.fill.matrix.sparse(MethSM_1, MethSM_2)
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' MethSM_1 = Methylation[[2]][[1]]
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' MethSM_2 = Methylation[[2]][[1]]
+#' rbind.fill.Matrix(MethSM_1, MethSM_2)
 #' 
-rbind.fill.matrix.sparse = function(x,y){
+rbind.fill.Matrix = function(x,y){
   
   ymiss = colnames(x)[which(is.na(match(colnames(x),colnames(y))))]
   ybind = Matrix::rsparsematrix(nrow=as.double(nrow(y)),ncol=as.double(length(ymiss)),density = 0)
@@ -53,7 +59,7 @@ rbind.fill.matrix.sparse = function(x,y){
   
 }
 
-#' Implementation performing a similar operation of rbind.fill.matrix.sparse but for columns
+#' Implementation performing a similar operation of rbind.fill.Matrix but for columns
 #' 
 #' @param x sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
 #' @param y sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
@@ -62,11 +68,17 @@ rbind.fill.matrix.sparse = function(x,y){
 #' 
 #' @export 
 #' 
-#' @example
+#' @examples
 #' 
-#' cbind.fill.matrix.sparse(MethSM_1. MethSM_2)
+#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' MethSM_1 = Methylation[[2]][[1]]
+#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' MethSM_2 = Methylation[[2]][[1]]
+#' cbind.fill.Matrix(MethSM_1, MethSM_2)
 #' 
-cbind.fill.matrix.sparse = function(x,y){
+cbind.fill.Matrix = function(x,y){
   
   ymiss = rownames(x)[which(is.na(match(rownames(x),rownames(y))))]
   ybind = rsparsematrix(nrow=as.double(length(ymiss)),ncol=as.double(ncol(y)),density = 0)
@@ -92,7 +104,7 @@ cbind.fill.matrix.sparse = function(x,y){
 #' Utility function to remove cytosines whose MTase target genomic context is affected by SNPs
 #' 
 #' @param Methylation as output by the CallContextMethylation() function
-#' @param CytosinesToMask 
+#' @param CytosinesToMask GRanges specifying the coordinate of the cytosines to discard.
 #' @param MaskSMmat whether the parameter Methylation includes single molecule matrixes
 #' @param SampleStringMatch list of per-sample string matches that are used to uniquely identify the relevant column for each species in the Methylation object. Defaults to list(Cast = "_CTKO", Spret = "_STKO")
 #' @param Experiment as detected by the DetectExperimentType() function. Should be either "DE" or "NO"
@@ -101,8 +113,10 @@ cbind.fill.matrix.sparse = function(x,y){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", package="SingleMoleculeFootprinting"))
-#' CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", 
+#' package="SingleMoleculeFootprinting"))
+#' CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", 
+#' package="SingleMoleculeFootprinting"))
 #' 
 #' MaskSNPs(Methylation = Methylation, CytosinesToMask = CytosinesToMask, MaskSMmat = FALSE, 
 #' SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), Experiment = "DE") -> Methylation_masked

@@ -20,8 +20,7 @@ calculate sequencing library conversion rate on a chromosome of choice
 }
 \examples{
 
-Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-
-ConversionRatePrecision = ConversionRate(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
+# ConversionRate(sampleFile = sampleFile, 
+# genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
 
 }

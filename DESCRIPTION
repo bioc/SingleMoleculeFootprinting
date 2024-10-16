@@ -24,12 +24,12 @@ Imports:
     BiocGenerics,
     Biostrings,
     BSgenome,
-    BSgenome.Mmusculus.UCSC.mm10,
     dplyr,
     GenomeInfoDb,
     GenomicRanges,
     ggpointdensity,
     ggplot2,
+    ggrepel,
     grDevices,
     IRanges,
     Matrix,
@@ -39,14 +39,13 @@ Imports:
     plyranges,
     QuasR,
     RColorBrewer,
+    rlang,
     S4Vectors,
-    SingleMoleculeFootprintingData,
     stats,
     stringr,
     tibble,
     tidyr,
     tidyverse,
-    qs,
 	  viridis
 Description: SingleMoleculeFootprinting provides functions 
     to analyze Single Molecule Footprinting (SMF) data. 
@@ -58,20 +57,22 @@ Description: SingleMoleculeFootprinting provides functions
     extract methylation information at the single molecule level 
     accounting for the two possible kind of SMF experiments (single enzyme or double enzyme), 
     classify single molecules based on their patterns of molecular occupancy,
-    plot SMF information at a given genomic location
+    plot SMF information at a given genomic location.
 biocViews: 
 	DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl, Sequencing
 BugReports: https://github.com/Krebslabrep/SingleMoleculeFootprinting/issues
 License: GPL-3
 Encoding: UTF-8
 Suggests: 
+    BSgenome.Mmusculus.UCSC.mm10,
     devtools,
     ExperimentHub,
     knitr,
-    parallel,
+    qs,
     rmarkdown,
     readr,
-    testthat (>= 3.0.0),
+    SingleMoleculeFootprintingData,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3

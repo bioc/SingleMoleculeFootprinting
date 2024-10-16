@@ -3,31 +3,43 @@ library(BSgenome.Mmusculus.UCSC.mm10)
 library(testthat)
 
 CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
-Qinput = paste0(CacheDir, "/NRF1Pair_Qinput.txt")
-MySample <- suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-Region_of_interest <- GRanges(seqnames = "chr6",
-                              ranges = IRanges(start = 88106000, end = 88106500),
-                              strand = "*")
-Methylation <- CallContextMethylation(sampleSheet = Qinput,
-                                      sample = MySample,
-                                      genome = BSgenome.Mmusculus.UCSC.mm10,
-                                      range = Region_of_interest,
-                                      coverage = 20,
-                                      ConvRate.thr = 0.2)
-Meth_SM = Methylation[[2]]
-TFBS <- GenomicRanges::GRanges("chr6",
-                                IRanges(88106253, 88106263),
-                                strand = "-")
+sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+samples <- suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")$SampleName))
+RegionOfInterest <- GRanges("chr6", IRanges(88106000, 88106500))
+CallContextMethylation(
+  sampleFile = sampleFile, 
+  samples = samples, 
+  genome = BSgenome.Mmusculus.UCSC.mm10, 
+  RegionOfInterest = RegionOfInterest,
+  coverage = 20, 
+  returnSM = TRUE,
+  ConvRate.thr = NULL,
+  verbose = FALSE,
+  clObj = NULL
+) -> Methylation
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+
 
 test_that("BinMethylation returns named numeric vector", {
 
-  expect_true(is.numeric(BinMethylation(MethSM = Meth_SM, TFBS = TFBS, bin = c(-15,15))))
-  expect_true(!is.null(names(BinMethylation(MethSM = Meth_SM, TFBS = TFBS, bin = c(-15,15)))))
+  TFBS_cluster = sort(TFBSs, by = ~ seqnames + start + end)
+  TFBS_centers = start(TFBSs) + (end(TFBSs)-start(TFBSs))/2
+  BinsCoordinates = IRanges(TFBS_centers-7, TFBS_centers+7)
+  BinMethylation(MethSM = Methylation[[2]]$NRF1pair_DE_, Bin = BinsCoordinates) %>%
+    is.numeric() %>%
+    expect_true()
 
 })
 
 test_that("SortReads returns a list", {
 
-  expect_true(is.list(SortReads(MethSM = Meth_SM, TFBS = TFBS, list(c(-35,-25), c(-15,15), c(25,35)), SortByCluster = FALSE)))
+  bins = list(c(-35,-25), c(-7,7), c(25,35))
+  TFBS_cluster = sort(TFBSs, by = ~ seqnames + start + end)
+  TFBS_centers = start(TFBS_cluster) + (end(TFBS_cluster)-start(TFBS_cluster))/2
+  BinsCoordinates = IRanges(start = c(min(TFBS_centers)+bins[[1]][1], TFBS_centers+bins[[2]][1], max(TFBS_centers)+bins[[3]][1]),
+                            end = c(min(TFBS_centers)+bins[[1]][2], TFBS_centers+bins[[2]][2], max(TFBS_centers)+bins[[3]][2]))
+  lapply(Methylation[[2]], SortReads, BinsCoordinates = BinsCoordinates, coverage = 30) %>%
+    is.list() %>%
+    expect_true()
 
 })

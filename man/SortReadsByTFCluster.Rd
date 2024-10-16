@@ -31,10 +31,11 @@ Wrapper to SortReads for TF cluster case
 }
 \examples{
 
-TFBSs = GenomicRanges::GRanges("chr6", IRanges(c(88106216, 88106253), c(88106226, 88106263)), strand = "-")
-elementMetadata(TFBSs)$name = c("NRF1", "NRF1")
-names(TFBSs) = c(paste0("TFBS_", c(4305215, 4305216)))
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
+package="SingleMoleculeFootprinting"))
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", 
+package="SingleMoleculeFootprinting"))
 
-SortedReads = SortReadsByTFCluster(MethSM = MethSM, TFBSs = TFBS_cluster)
+SortedReads = SortReadsByTFCluster(MethSM = Methylation[[2]], TFBS_cluster = TFBSs)
 
 }

@@ -9,8 +9,10 @@
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
+#' library(BSgenome.Mmusculus.UCSC.mm10)
+#' CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
+#' sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+#' QuasRprj = GetQuasRprj(sampleFile, BSgenome.Mmusculus.UCSC.mm10)
 #'
 GetQuasRprj = function(sampleFile, genome){
 
@@ -43,13 +45,18 @@ GetQuasRprj = function(sampleFile, genome){
 #' @export
 #'
 #' @examples
-#'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-#' sample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' range = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#'
-#' MethSM = GetSingleMolMethMat(QuasRprj, range, sample)
+#' 
+#' library(BSgenome.Mmusculus.UCSC.mm10)
+#' library(IRanges)
+#' library(GenomicRanges)
+#' 
+#' CacheDir <- ExperimentHub::getExperimentHubOption(arg = "CACHE")
+#' sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+#' sample = suppressMessages(readr::read_delim(sampleFile, delim = "\t")[[2]])
+#' QuasRprj = GetQuasRprj(sampleFile, BSgenome.Mmusculus.UCSC.mm10)
+#' range = GRanges("chr6", IRanges(88106000, 88106500))
+#' 
+#' GetSingleMolMethMat(QuasRprj, range, sample)
 #'
 GetSingleMolMethMat = function(QuasRprj,range,sample){
 
@@ -133,13 +140,11 @@ MethSM.to.MethGR = function(MethSM, chromosome){
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-#' sample = suppressMessages(readr::read_delim(Qinput, delim = "\t")[[2]])
-#' range = GRanges(seqnames = "chr6", ranges = IRanges(start = 88106000, end = 88106500), strand = "*")
-#' MethSM = GetSingleMolMethMat(QuasRprj, range, sample)
-#'
-#' MethSM = FilterByConversionRate(MethSM, chr = "chr19", genome = BSgenome.Mmusculus.UCSC.mm10, thr = 0.8)
+#' library(BSgenome.Mmusculus.UCSC.mm10)
+#' MethSM = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))[[2]]$SMF_MM_TKO_DE_
+#' FilterByConversionRate(MethSM, chr = "chr19", 
+#' genome = BSgenome.Mmusculus.UCSC.mm10, thr = 0.8)
 #'
 FilterByConversionRate = function(MethSM, chr, genome, thr){
 
@@ -171,11 +176,10 @@ FilterByConversionRate = function(MethSM, chr, genome, thr){
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-#' Samples = QuasR::alignments(QuasRprj)[[1]]$SampleName
-#'
-#' ExpType = DetectExperimentType(Samples)
+#' CacheDir = ExperimentHub::getExperimentHubOption(arg = "CACHE")
+#' sampleFile = paste0(CacheDir, "/NRF1Pair_sampleFile.txt")
+#' samples = suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")[[2]]))
+#' DetectExperimentType(samples)
 #'
 DetectExperimentType = function(Samples){
 
@@ -207,11 +211,9 @@ DetectExperimentType = function(Samples){
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#' QuasRprj = GetQuasRprj(Qinput, BSgenome.Mmusculus.UCSC.mm10)
-#' Samples = QuasR::alignments(QuasRprj)[[1]]$SampleName
-#' sample = Samples[1]
-#' MethGR = QuasR::qMeth(QuasRprj[grep(sample, Samples)], mode="allC", range, collapseBySample = TRUE, keepZero = TRUE)
+#' library(BSgenome.Mmusculus.UCSC.mm10)
+#' MethGR = qs::qread(system.file("extdata", "Methylation_3.qs", 
+#' package="SingleMoleculeFootprinting"))[[1]]
 #'
 #' FilterContextCytosines(MethGR, BSgenome.Mmusculus.UCSC.mm10, "NGCNN")
 #'
@@ -255,7 +257,8 @@ FilterContextCytosines = function(MethGR, genome, context){
 #' @export
 #' 
 #' @examples
-#' CollapseStrands(MethGR, "GC")
+#' 
+#' # CollapseStrands(MethGR, "GC")
 #' 
 #'
 CollapseStrands = function(MethGR, context){
@@ -315,7 +318,7 @@ CollapseStrands = function(MethGR, context){
 #' 
 #' @examples
 #' 
-#' CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
+#' # CollapseStrandsSM(MethSM, "GC", BSgenome.Mmusculus.UCSC.mm10, "chr19")
 #' 
 #'
 CollapseStrandsSM = function(MethSM, context, genome, chr){
@@ -339,7 +342,7 @@ CollapseStrandsSM = function(MethSM, context, genome, chr){
   colnames(MethSM_minus) = as.character(as.numeric(colnames(MethSM_minus)) + offset)
 
   # Merge matrixes
-  StrandCollapsedSM = rbind.fill.matrix.sparse(x = MethSM_minus, y = MethSM_plus)
+  StrandCollapsedSM = rbind.fill.Matrix(x = MethSM_minus, y = MethSM_plus)
 
   return(StrandCollapsedSM)
 
@@ -385,43 +388,6 @@ CoverageFilter = function(MethGR, thr){
     
 }
 
-#' Merged GC and CG matrix (Obsolete since implementation of sparse SM)
-#'
-#' @param matrixes list of two matrixes to merge, one for GC info and one for CG.
-#'
-#' @import BiocGenerics
-#'
-#' @return merged matrix
-#'
-#' @examples
-#'
-#' MergedSM = MergeMatrixes(MethSM)
-#'
-MergeMatrixes = function(matrixes){
-
-  # When some reads only cover either DGCHN or NWCGW positions cbind complains
-  if(nrow(matrixes[[1]]) != nrow(matrixes[[2]]) | !(all(sort(rownames(matrixes[[1]])) %in% sort(rownames(matrixes[[2]]))))){
-
-    # Which reads cover only one context?
-    DGCHNonly_reads = rownames(matrixes[[1]])[!(rownames(matrixes[[1]]) %in% rownames(matrixes[[2]]))]
-    NWCGWonly_reads = rownames(matrixes[[2]])[!(rownames(matrixes[[2]]) %in% rownames(matrixes[[1]]))]
-    # Fill two dummy matrices to make the reads equal in the input matrixes
-    DGCHNonly_mat = matrix(data = NA, nrow = length(DGCHNonly_reads), ncol = ncol(matrixes[[2]]), dimnames = list(DGCHNonly_reads, colnames(matrixes[[2]])))
-    NWCGWonly_mat = matrix(data = NA, nrow = length(NWCGWonly_reads), ncol = ncol(matrixes[[1]]), dimnames = list(NWCGWonly_reads, colnames(matrixes[[1]])))
-    # merge the input matrixes to the respective dummy
-    matrixes[[1]] = BiocGenerics::rbind(matrixes[[1]], NWCGWonly_mat)
-    matrixes[[2]] = BiocGenerics::rbind(matrixes[[2]], DGCHNonly_mat)
-
-  }
-
-  # Sort reads alphanumerically before binding, because cbind doesn't join (I've tested) matrices by rownames
-  matrixes[[1]] = matrixes[[1]][sort(rownames(matrixes[[1]])),]
-  matrixes[[2]] = matrixes[[2]][sort(rownames(matrixes[[2]])),]
-  MergedMatrixes = BiocGenerics::cbind(matrixes[[1]], matrixes[[2]])
-  MergedMatrixes = MergedMatrixes[,as.character(sort(as.numeric(colnames(MergedMatrixes))))]
-
-}
-
 #' Call Context Methylation
 #'
 #' Can deal with multiple samples
@@ -448,9 +414,8 @@ MergeMatrixes = function(matrixes){
 #' 
 #' @examples
 #'
-#' samples <- suppressMessages(unique(readr::read_delim(sampleFile, delim = "\t")[[2]]))
-#' RegionOfInterest <- GRanges("chr6", IRanges(88106000, 88106500))
-#' 
+#' sampleFile = NULL
+#' if(!is.null(sampleFile)){
 #' Methylation <- CallContextMethylation(
 #'   sampleFile = sampleFile, 
 #'   samples = samples, 
@@ -459,8 +424,9 @@ MergeMatrixes = function(matrixes){
 #'   coverage = 20, 
 #'   returnSM = TRUE,
 #'   ConvRate.thr = NULL,
-#'   clObj = NULL # N.b.: when returnSM = TRUE, clObj should be set to NULL
+#'   clObj = NULL
 #' )
+#' }
 #'
 CallContextMethylation = function(sampleFile, samples, genome, RegionOfInterest, coverage = 20, ConvRate.thr = NULL, returnSM = TRUE, clObj=NULL, verbose = FALSE){
 
@@ -571,7 +537,7 @@ CallContextMethylation = function(sampleFile, samples, genome, RegionOfInterest,
     NAMES = unique(gsub("_Coverage$", "", grep("_Coverage$", colnames(elementMetadata(MergedGR)), value=TRUE)))
     if (returnSM){
       MergedSM = lapply(seq_along(ContextFilteredMethSM_strict), function(n){
-        Reduce(cbind.fill.matrix.sparse, ContextFilteredMethSM_strict[[n]])
+        Reduce(cbind.fill.Matrix, ContextFilteredMethSM_strict[[n]])
         })
       }
   } else {

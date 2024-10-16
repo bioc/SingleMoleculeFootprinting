@@ -15,7 +15,7 @@ MaskSNPs(
 \arguments{
 \item{Methylation}{as output by the CallContextMethylation() function}
 
-\item{CytosinesToMask}{}
+\item{CytosinesToMask}{GRanges specifying the coordinate of the cytosines to discard.}
 
 \item{MaskSMmat}{whether the parameter Methylation includes single molecule matrixes}
 
@@ -28,8 +28,10 @@ Utility function to remove cytosines whose MTase target genomic context is affec
 }
 \examples{
 
-Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", package="SingleMoleculeFootprinting"))
-CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", package="SingleMoleculeFootprinting"))
+Methylation = qs::qread(system.file("extdata", "Methylation_2.qs", 
+package="SingleMoleculeFootprinting"))
+CytosinesToMask = qs::qread(system.file("extdata", "cytosines_to_mask.qs", 
+package="SingleMoleculeFootprinting"))
 
 MaskSNPs(Methylation = Methylation, CytosinesToMask = CytosinesToMask, MaskSMmat = FALSE, 
 SampleStringMatch = list(Cast = "_CTKO", Spret = "_STKO"), Experiment = "DE") -> Methylation_masked

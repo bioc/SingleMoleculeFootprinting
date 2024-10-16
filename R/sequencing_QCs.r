@@ -18,9 +18,8 @@
 #'
 #' @examples
 #'
-#' Qinput = system.file("extdata", "QuasR_input_pairs.txt", package = "SingleMoleculeFootprinting", mustWork = T)
-#'
-#' ConversionRatePrecision = ConversionRate(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
+#' # ConversionRate(sampleFile = sampleFile, 
+#' # genome = BSgenome.Mmusculus.UCSC.mm10, chr = 19, cores = 1)
 #'
 ConversionRate = function(sampleFile, genome, chr=19, cores=1){
 
@@ -65,14 +64,13 @@ ConversionRate = function(sampleFile, genome, chr=19, cores=1){
 #' @export
 #'
 #' @examples
-#' Qinput = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
+#' 
+#' sampleFile = paste0(tempdir(), "/NRF1Pair_Qinput.txt")
+#' 
+#' if(file.exists(sampleFile)){
 #' library(BSgenome.Mmusculus.UCSC.mm10)
-#'
-#' if(file.exists(Qinput)){
-#'     # clObj = parallel::makeCluster(5)
-#'     # BaitRegions = SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
-#'     # BaitCaptureEfficiency = BaitCapture(sampleFile = Qinput, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions, clObj=clObj)
-#'     # parallel::stopCluster(clObj)
+#' BaitRegions = SingleMoleculeFootprintingData::EnrichmentRegions_mm10.rds()
+#' BaitCapture(sampleFile = sampleFile, genome = BSgenome.Mmusculus.UCSC.mm10, baits = BaitRegions)
 #' }
 #'
 BaitCapture = function(sampleFile, genome, baits, clObj=NULL){
@@ -101,14 +99,15 @@ BaitCapture = function(sampleFile, genome, baits, clObj=NULL){
 #' @param Plotting_DF data.frame as returned by GRanges_to_DF function.
 #'
 #' @import ggplot2
+#' @importFrom rlang .data
 #'
 Plot_LowCoverageMethRate = function(Plotting_DF){
 
-  ggplot(Plotting_DF, aes(x=ExpectedMeth,y=ObservedMeth, group=interaction(Sample,Coverage), color=Sample)) +
-    geom_line(aes(linetype=Coverage, size=Coverage)) +
+  ggplot(Plotting_DF, aes(x=.data$ExpectedMeth,y=.data$ObservedMeth, group=interaction(.data$Sample,.data$Coverage), color=.data$Sample)) +
+    geom_line(aes(linetype=.data$Coverage, size=.data$Coverage)) +
     ylab("Observed Methylation Rate") +
     xlab("Expected Methylation Rate") +
-    facet_wrap(~GenomicContext) +
+    facet_wrap(~.data$GenomicContext) +
     theme_classic() +
     scale_size_manual("type", values = c(2.5, 1), guide = "none")
 
@@ -146,11 +145,12 @@ LowCoverageMethRate_RMSE = function(BinnedMethRate){
 #' @param RMSE_DF data.frame as returned by the LowCoverageMethRate_RMSE function
 #'
 #' @import ggplot2
+#' @importFrom rlang .data
 #'
 Plot_LowCoverageMethRate_RMSE = function(RMSE_DF){
 
   RMSE_DF %>%
-    ggplot(aes(Sample, RMSE)) +
+    ggplot(aes(.data$Sample, .data$RMSE)) +
     geom_bar(stat = 'identity') +
     ylab("Root mean squared error\n(RMSE)") +
     xlab("") +

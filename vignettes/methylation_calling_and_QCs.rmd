@@ -7,7 +7,7 @@ output:
     toc_depth: 4
     highlight: tango
 vignette: >
-  %\VignetteIndexEntry{SingleMoleculeFootprinting}
+  %\VignetteIndexEntry{methylation_calling_and_QCs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -140,11 +140,13 @@ ConversionRate(
 ```
 
 ### Methylation rate sample correlation (high coverage)
+```{r, echo=FALSE, eval=FALSE}
+sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp2.txt"
+samples = unique(readr::read_delim(sampleFile, "\t")$SampleName)
+```
 It is useful to compare the distribution of cytosine methylation rates across replicates.
 ```{r, eval=FALSE}
 RegionOfInterest = GRanges(BSgenome.Mmusculus.UCSC.mm10@seqinfo["chr19"])
-sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp2.txt"
-samples = unique(readr::read_delim(sampleFile, "\t")$SampleName)
 
 CallContextMethylation(
   sampleFile = sampleFile, 
@@ -207,6 +209,17 @@ knitr::include_graphics(system.file("extdata", "MethRateCorr_HCGs.png", package=
 ```
 
 ### Methylation rate sample correlation (low coverage)
+```{r, echo=FALSE, eval=FALSE}
+sampleFile_LowCoverage = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
+samples_LowCoverage = grep(
+  "_NP_NO_R.*_MiSeq", 
+  unique(readr::read_delim(sampleFile_LowCoverage, "\t")$SampleName), value = TRUE)
+
+sampleFile_HighCoverage_reference = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
+samples_HighCoverage_reference = grep(
+  "SMF_MM_TKO_as_NO_R_NextSeq", 
+  unique(readr::read_delim(sampleFile_HighCoverage_reference, "\t")$SampleName), value = TRUE)
+```
 Before investing in deep sequencing, it is advisable to shallowly sequence libraries to assess the footprinting quality of the libraries.  
 However the per-cytosine coverage obtained at shallow sequencing is insufficient to estimate methylation rates for individual cytosines.  
 A solution is to pile up molecules covering cytosines from genomic loci that are known to behave similarly and compute a "composite" methylation rate.  
@@ -220,11 +233,6 @@ N.b.: the methylation calling step is quite computationally demanding for full g
 ```{r, eval=FALSE}
 RegionOfInterest = GRanges(BSgenome.Mmusculus.UCSC.mm10@seqinfo["chr19"])
 
-sampleFile_LowCoverage = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
-samples_LowCoverage = grep(
-  "_NP_NO_R.*_MiSeq", 
-  unique(readr::read_delim(sampleFile_LowCoverage, "\t")$SampleName), value = TRUE)
-
 CallContextMethylation(
   sampleFile = sampleFile_LowCoverage, 
   samples = samples_LowCoverage, 
@@ -236,11 +244,6 @@ CallContextMethylation(
   clObj = NULL,
   verbose = FALSE
   )$DGCHN -> LowCoverageMethylation
-
-sampleFile_HighCoverage_reference = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_tmp.txt"
-samples_HighCoverage_reference = grep(
-  "SMF_MM_TKO_as_NO_R_NextSeq", 
-  unique(readr::read_delim(sampleFile_HighCoverage_reference, "\t")$SampleName), value = TRUE)
 
 CallContextMethylation(
   sampleFile = sampleFile_HighCoverage_reference, 
@@ -500,10 +503,34 @@ PlotAvgSMF(
 ```
 
 ## Plotting composite sites
+```{r, echo=FALSE, eval=FALSE}
+sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_AllCanWGpooled_dprm_DE_only.txt"
+samples = suppressMessages(unique(readr::read_delim(sampleFile, "\t")$SampleName))
+plyranges::filter(TFBSs, TF=="REST" & isBound) -> REST_motifs
+
+clObj = parallel::makeCluster(16)
+motif.counts = QuasR::qCount(GetQuasRprj(ChIP_data_dictionary[["Rest"]], genome = BSgenome.Mmusculus.UCSC.mm10), query = IRanges::resize(REST_motifs, 200, "center"), clObj = clObj)
+parallel::stopCluster(clObj)
+
+motif.counts %>%
+  data.frame() %>%
+  rownames_to_column("TF.name") %>%
+  arrange(desc(Rest)) %>%
+  head(500) %>%
+  dplyr::select(TF.name) -> top_rest
+
+TopMotifs = TFBSs[top_rest$TF.name]
+elementMetadata(TopMotifs) = NULL
+TopMotifs$TF = "REST"
+
+qs::qsave(TopMotifs, "../inst/extdata/Top_bound_REST.qs")
+```
 It can be useful to plot composite data by piling up heterologous features, such as multiple binding sites for a TF.  
 It is advisable to select a subset of motifs, such as the top 500 motifs ranked by ChIP-seq score. That is generally sufficient.  
 Here we exemplify how to do that for the top 500 REST bound motifs.
 ```{r, eval=FALSE}
+TopMotifs = qs::qread(system.file("extdata", "Top_bound_REST.qs", package="SingleMoleculeFootprinting"))
+
 CollectCompositeData(
   sampleFile = sampleFile, 
   samples = samples, 

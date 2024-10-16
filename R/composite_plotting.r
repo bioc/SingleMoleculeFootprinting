@@ -13,6 +13,7 @@
 #' @import dplyr
 #' @importFrom tidyr separate
 #' @importFrom parallel makeCluster stopCluster
+#' @importFrom rlang .data
 #'
 #' @return data.frame of bulk SMF info ready for plotting
 #'
@@ -20,6 +21,8 @@
 #' 
 #' @examples
 #' 
+#' sampleFile = NULL
+#' if(!is.null(sampleFile)){
 #' CollectCompositeData(
 #' sampleFile = sampleFile, 
 #' samples = samples, 
@@ -30,6 +33,7 @@
 #' ConvRate.thr = NULL, 
 #' cores = 16
 #' ) -> CompositeData
+#' }
 #'
 CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, coverage=20, ConvRate.thr = NULL, cores=1){
 
@@ -61,19 +65,19 @@ CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, cove
   Methylation_expanded$TFBS_center = start(IRanges::resize(RegionOfInterest[subjectHits(Overlaps)], width = 1, fix = 'center'))
   Methylation_expanded$TFBS_index = subjectHits(Overlaps)
   
-  message(paste0(round(sum(table(MethCalls$TFBS_index) > 1)/length(TFBSs)*100), 
+  message(paste0(round(sum(table(Methylation_expanded$TFBS_index) > 1)/length(TFBSs)*100), 
                  "% of sites are found covered at least at 1 cytosine"))
   
   Methylation_expanded %>%
     data.frame() %>%
-    mutate(TFBS_strandedness = as.character(strand(RegionOfInterest))[TFBS_index]) %>%
-    mutate(RelStart = ifelse(TFBS_strandedness == "+", start - TFBS_center, -(start - TFBS_center))) %>%
-    dplyr::select(-TFBS_strandedness) %>%
-    gather(Measure, Value, grep("_Coverage$|_MethRate$", colnames(elementMetadata(Methylation_expanded)), value = TRUE)) %>%
-    mutate(Sample = gsub("_MethRate$|_Coverage$", "", Measure), Measure = gsub("^.*_", "", Measure)) %>%
-    spread(Measure, Value) %>%
-    mutate(SMF = 1 - MethRate) %>%
-    select(-MethRate) -> CompositeData
+    mutate(TFBS_strandedness = as.character(strand(RegionOfInterest))[.data$TFBS_index]) %>%
+    mutate(RelStart = ifelse(.data$TFBS_strandedness == "+", start - .data$TFBS_center, -(start - .data$TFBS_center))) %>%
+    dplyr::select(-.data$TFBS_strandedness) %>%
+    gather(.data$Measure, .data$Value, grep("_Coverage$|_MethRate$", colnames(elementMetadata(Methylation_expanded)), value = TRUE)) %>%
+    mutate(Sample = gsub("_MethRate$|_Coverage$", "", .data$Measure), Measure = gsub("^.*_", "", .data$Measure)) %>%
+    spread(.data$Measure, .data$Value) %>%
+    mutate(SMF = 1 - .data$MethRate) %>%
+    dplyr::select(-.data$MethRate) -> CompositeData
   
   return(CompositeData)
 
@@ -86,16 +90,18 @@ CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, cove
 #' 
 #' @param CompositeData the output of the CollectCompositeData function
 #' @param span the span parameter to pass to geom_smooth
+#' @param TF string of TF name to use for plot title
 #' 
 #' @import ggplot2
 #' @import viridis
 #' @importFrom ggpointdensity geom_pointdensity
+#' @importFrom rlang .data
 #' 
 #' @export
 #' 
 #' @examples
 #' 
-#' CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
+#' # CompositePlot(CompositeData = CompositeData, span = 0.1, TF = "Rest")
 #' 
 CompositePlot = function(CompositeData, span=0.1, TF){
   
@@ -106,8 +112,8 @@ CompositePlot = function(CompositeData, span=0.1, TF){
   }
   
   CompositeData %>%
-    ggplot(aes(RelStart, SMF)) +
-    {if(!point_density){geom_point(aes(color = Sample), alpha=0.5)}} +
+    ggplot(aes(.data$RelStart, .data$SMF)) +
+    {if(!point_density){geom_point(aes(color = .data$Sample), alpha=0.5)}} +
     {if(point_density){geom_pointdensity(adjust = 0.1, size = .5)}} +
     geom_smooth(se = TRUE, method = "loess", span = span) +
     viridis::scale_fill_viridis(option = "inferno") +

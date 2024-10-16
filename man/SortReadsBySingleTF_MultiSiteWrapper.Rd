@@ -66,9 +66,11 @@ The function starts from a list of single TFBSs, arranges them into clusters, ca
 }
 \examples{
 
+sampleFile = NULL
+if(!is.null(sampleFile)){
 SortReadsBySingleTF_MultiSiteWrapper(
-sampleFile = "...", 
-samples = "...", 
+sampleFile = sampleFile, 
+samples = samples, 
 genome = BSgenome.Mmusculus.UCSC.mm10, 
 coverage = 20, ConvRate.thr = NULL, 
 CytosinesToMask = NULL,
@@ -77,5 +79,6 @@ max_interTF_distance = NULL, max_window_width = NULL, min_cluster_width = NULL,
 fix.window.size = TRUE, max.window.size = 50, 
 cores = 4
 ) -> sorting_results
+}
 
 }
