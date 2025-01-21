@@ -5,7 +5,7 @@ output:
     toc: true
     toc_float: true
     toc_depth: 4
-    highlight: tango
+    highlight: pygments
 vignette: >
   %\VignetteIndexEntry{FootprintCharter}
   %\VignetteEngine{knitr::rmarkdown}
@@ -23,32 +23,170 @@ knitr::opts_chunk$set(
 ```
 
 ## Introduction
-This vignette exemplifies how to perform unsupervised footprint detection and quantification using *FootprintCharter* as per [Baderna & Barzaghi et al., 2024]() and [Barzaghi et al., 2024]().  
 
-*FootprintCharter* partitions molecules by their methylation patterns without relying on orthogonal genomic annotations such as TF motifs.  
+This vignette exemplifies how to perform unsupervised footprint detection and quantification using *FootprintCharter* as per [Baderna & Barzaghi et al., 2024]() and [Barzaghi et al., 2024]().
+
+*FootprintCharter* partitions molecules by their methylation patterns without relying on orthogonal genomic annotations such as TF motifs.\
+At the core, *FootprintCharter* performs a series of filtering steps to obtain a dense matrix of cytosines spanning 80bps. The molecules populating this matrix are than partitioned using the *k*-medoids algorithm. Footprints for TFs and nucleosomes are then detected by segmenting the average SMF signal separately for each partition. Optionally, TF footprints can be annotated with a given list of annotated motifs. Finally, biologically equivalent TF footprints are aggregated based on coordinates overlaps. For more details consult [Barzaghi et al., 2024]().
 
 ## Loading libraries
+
 ```{r setup, message=FALSE}
 suppressWarnings(library(SingleMoleculeFootprinting))
-suppressWarnings(library(BSgenome.Mmusculus.UCSC.mm10))
+suppressWarnings(library(GenomicRanges))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(ggplot2))
 ```
 
-##
+## Prepare inputs
+
 ```{r}
 Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+MethSM = Methylation[[2]]
 RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
-TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
-
-PlotAvgSMF(MethGR = Methylation[[1]], RegionOfInterest = RegionOfInterest, TFBSs = TFBSs)
+RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 ```
 
+## Run FootprintCharter
+
+The function *FootprintCharter* is tuned with 5 key parameters
+
+-   *k*, the number of desired partitions. This number is better set higher than lower. The tool will reduce it iteratively if partitions are not covered enough (set by *n*).\
+-   *n*, the minimum number of molecules per partition.\
+-   *TF.length*, length thresholds of expected TF footprints (in bps).\
+-   *nucleosome.length*, length thresholds of expected nucleosome footprints (in bps).\
+-   *cytosine.coverage.thr*, discards cytosines not covered enough from footprint detection step.\
 
 ```{r}
-MethSM = Methylation[[2]]
+FootprintCharter(
+  MethSM = MethSM,
+  RegionOfInterest = RegionOfInterest,
+  coverage = 30, 
+  k = 16,
+  n = 5, 
+  TF.length = c(5,75),
+  nucleosome.length = c(120,1000),
+  cytosine.coverage.thr = 5,
+  verbose = TRUE
+) -> FC_results
 ```
 
+The function *FootprintCharter* outputs a list of two items.\
+The first is a vector of *partitioned.molecules*, structured in the same way as the one output by the function *SortReads*.
+
+```{r}
+rrapply::rrapply(FC_results$partitioned.molecules, f = head, n = 2)
+```
+
+The second is a data.frame of detected footprints. The *biological.state* column indicates the putative nature of the detected footprints and it can be either of TF, nucleosome, accessible, unrecognized and noise.\
+The last two represent cases in which footprints couldn't be interpreted either because too short (noise) or because they are detected at the edge of molecules and hence their true width cannot be established.
+
+```{r}
+head(FC_results$footprints.df)
+```
+
+Optionally, it is possible to annotate TF footprints by providing the argument *TFBSs* with user-provided motifs. *TFBSs* needs a GRanges with at least two metadata columns: TF and absolute.idx for TF identity and unique motif index, respectively.
+
+```{r}
+TFBSs = qs::qread(system.file("extdata", "TFBSs_1.qs", package="SingleMoleculeFootprinting"))
+TFBSs$absolute.idx = names(TFBSs)
+TFBSs
+```
+
+```{r}
+FootprintCharter(
+  MethSM = MethSM,
+  RegionOfInterest = RegionOfInterest,
+  TFBSs = TFBSs,
+  coverage = 30, 
+  k = 16,
+  n = 5, 
+  TF.length = c(5,75), 
+  nucleosome.length = c(120,1000), 
+  cytosine.coverage.thr = 5,
+  verbose = FALSE
+) -> FC_results
+
+FC_results$footprints.df %>%
+  filter(biological.state == "TF") %>%
+  dplyr::select(start, end, partition.nr, TF, TF.name) %>%
+  tidyr::unnest(cols = c(TF, TF.name))
+```
+
+This way, the footprints data.frame reports TF motif annotations by populating two columns: TF and TF.name, each a list of annotations for each putative TF footprint.
+
+## Inspect detected footprints
+
+The function *PlotFootprints* allows to visually inspect the footprint detection results.
+
+```{r}
+x.axis.breaks = c(
+  start(resize(RegionOfInterest, width = 500, fix = "center")), 
+  end(resize(RegionOfInterest, width = 500, fix = "center"))
+  )
+PlotFootprints(
+  MethSM = MethSM, 
+  partitioned.molecules = FC_results$partitioned.molecules, 
+  footprints.df = FC_results$footprints.df, 
+  TFBSs = TFBSs
+    ) +
+  scale_x_continuous(
+    limits = x.axis.breaks, 
+    breaks = x.axis.breaks, 
+    labels = format(x.axis.breaks, nsmall=1, big.mark=",")
+    ) +
+  theme(legend.position = "top")
+```
+
+The function plots the average SMF signal separately for each partition alongside the biological.state annotation. The dashed line indicates the footprint detection threshold.
+
+## Plot single molecule heatmaps
+
+The function *PlotSM* can be used to plot binary heatmaps of single molecules partitioned by *FootprintCharter*.
+
+```{r}
+PlotSM(
+  MethSM = MethSM, 
+  RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
+  SortedReads = FC_results$partitioned.molecules, 
+  sorting.strategy = "custom"
+  )
+```
+
+It might be desirable to arrange partitions according to a biologically meaningful order, such as TF binding and cobinding.
+
+Users can leverage the plot produced with the *PlotFootprints* function as exemplified above and instruct a preferred order. In this case, we plot the partitions with two NRF1 footprints (3,1) on top, followed by partitions with single TF footprints (2,5), accessibility (6,7) and nucleosome footprints (4,8).
+
+```{r}
+partitions.order = c(3,1,2,5,6,7,4,8)
+ordered.molecules = lapply(FC_results$partitioned.molecules, function(x){x[rev(partitions.order)]})
+
+PlotSM(
+  MethSM = MethSM, 
+  RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
+  SortedReads = ordered.molecules, 
+  sorting.strategy = "custom"
+  )
+```
+
+Single molecules displaying *FootprintCharter* annotations can be plotted using the *Plot_FootprintCharter_SM* function.
+
+```{r}
+Plot_FootprintCharter_SM(
+  footprints.df = FC_results$footprints.df, 
+  RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
+  partitions.order = partitions.order
+)
+```
+
+## Genome-wide wrapper
+
+```{r}
+
+```
 
 ## sessionInfo
+
 ```{r sessionInfo, echo=FALSE}
 sessionInfo()
 ```

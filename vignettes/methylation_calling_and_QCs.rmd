@@ -5,7 +5,7 @@ output:
     toc: true
     toc_float: true
     toc_depth: 4
-    highlight: tango
+    highlight: pygments
 vignette: >
   %\VignetteIndexEntry{methylation_calling_and_QCs}
   %\VignetteEngine{knitr::rmarkdown}

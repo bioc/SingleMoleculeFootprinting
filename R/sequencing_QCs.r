@@ -184,7 +184,7 @@ Plot_LowCoverageMethRate_RMSE = function(RMSE_DF){
 #' @export
 #'
 #' @examples
-#' # I don't have enough example data for this
+#' 
 #' # CompositeMethylationCorrelation(LowCoverage = LowCoverage$DGCHN,
 #' #                                 LowCoverage_samples = LowCoverage_Samples,
 #' #                                 HighCoverage = HighCoverage$DGCHN,

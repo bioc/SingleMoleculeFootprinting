@@ -44,7 +44,7 @@ It bins cytosines with similar methylation rates (as observed in the HighCoverag
 methylation rate value is computed for each bin
 }
 \examples{
-# I don't have enough example data for this
+
 # CompositeMethylationCorrelation(LowCoverage = LowCoverage$DGCHN,
 #                                 LowCoverage_samples = LowCoverage_Samples,
 #                                 HighCoverage = HighCoverage$DGCHN,
