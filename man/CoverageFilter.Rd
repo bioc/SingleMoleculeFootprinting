@@ -17,3 +17,9 @@ filtered MethGR
 \description{
 Filter Cs for coverage
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+CoverageFilter(MethGR = Methylation[[1]], thr = 20)
+
+}

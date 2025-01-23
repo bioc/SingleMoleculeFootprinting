@@ -42,3 +42,23 @@ FootprintCharter(
 \description{
 Run FootprintCharter
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+MethSM = Methylation[[2]]
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
+
+FootprintCharter(
+  MethSM = MethSM,
+  RegionOfInterest = RegionOfInterest,
+  coverage = 30,
+  k = 16,
+  n = 5,
+  TF.length = c(5,75),
+  nucleosome.length = c(120,1000),
+  cytosine.coverage.thr = 5,
+  verbose = TRUE
+  ) -> FC_results
+  
+}

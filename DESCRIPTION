@@ -24,6 +24,7 @@ Imports:
     BiocGenerics,
     Biostrings,
     BSgenome,
+    cluster,
     dplyr,
     GenomeInfoDb,
     GenomicRanges,
@@ -32,8 +33,11 @@ Imports:
     ggrepel,
     grDevices,
     IRanges,
+    magrittr,
     Matrix,
+    miscTools,
     parallel,
+    parallelDist,
     patchwork,
     plyr,
     plyranges,
@@ -60,6 +64,7 @@ Description: SingleMoleculeFootprinting provides functions
     plot SMF information at a given genomic location.
 biocViews: 
 	DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl, Sequencing
+URL: https://www.bioconductor.org/packages/release/bioc/html/SingleMoleculeFootprinting.html
 BugReports: https://github.com/Krebslabrep/SingleMoleculeFootprinting/issues
 License: GPL-3
 Encoding: UTF-8

@@ -71,8 +71,6 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
   message("(2) CALLING METHYLATION AND SORTING")
   parallel::mclapply(seq_along(MethylationCallingWindows), function(i){
     
-    print(i)
-    
     CurrentWindow = MethylationCallingWindows[i]
     ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = samples))
     
@@ -217,8 +215,6 @@ SortReadsByTFCluster_MultiSiteWrapper = function(sampleFile, samples, genome, co
   
   message("(3) CALLING METHYLATION AND SORTING")
   parallel::mclapply(seq_along(MethylationCallingWindows), function(i){
-    
-    print(i)
     
     CurrentWindow = MethylationCallingWindows[i]
     ExperimentType = suppressMessages(SingleMoleculeFootprinting::DetectExperimentType(Samples = samples))

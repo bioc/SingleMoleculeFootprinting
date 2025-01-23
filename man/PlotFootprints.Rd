@@ -18,3 +18,30 @@ PlotFootprints(MethSM, partitioned.molecules, footprints.df, TFBSs)
 \description{
 Plot bulk SMF separately for each partition alognside footprint detection results.
 }
+\examples{
+
+Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+MethSM = Methylation[[2]]
+RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
+
+FootprintCharter(
+  MethSM = MethSM,
+  RegionOfInterest = RegionOfInterest,
+  coverage = 30,
+  k = 16,
+  n = 5,
+  TF.length = c(5,75),
+  nucleosome.length = c(120,1000),
+  cytosine.coverage.thr = 5,
+  verbose = TRUE
+  ) -> FC_results
+  
+PlotFootprints(
+  MethSM = MethSM, 
+  partitioned.molecules = FC_results$partitioned.molecules, 
+  footprints.df = FC_results$footprints.df, 
+  TFBSs = TFBSs
+  )
+
+}

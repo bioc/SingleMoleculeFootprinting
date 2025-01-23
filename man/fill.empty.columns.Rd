@@ -4,7 +4,7 @@
 \alias{fill.empty.columns}
 \title{Fills empty columns}
 \usage{
-\method{fill}{empty.columns}(MethSM, verbose = TRUE)
+fill.empty.columns(MethSM, verbose = TRUE)
 }
 \arguments{
 \item{MethSM}{coming from a matrix.sliding.window.average call}

@@ -83,7 +83,7 @@ panel.jet <- function(...) {
 #'
 panel.hist <- function(x, ...){
   usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5) )
+  par(usr = c(usr[c(1,2)], 0, 1.5) )
   h <- hist(x, plot = FALSE)
   breaks <- h$breaks; nB <- length(breaks)
   y <- h$counts; y <- y/max(y)

@@ -19,7 +19,8 @@ Collapse strands
 }
 \examples{
 
-# CollapseStrands(MethGR, "GC")
-
+Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+MethGR = plyranges::filter(Methylation[[1]], GenomicContext == "GCH")
+CollapseStrands(MethGR = MethGR, context = "GC")
 
 }

@@ -77,8 +77,6 @@
 #' 
 #' @import dplyr
 #' 
-#' @export
-#' 
 DetectFootprints = function(
     MethSM, 
     partitioned.molecules, 
@@ -122,8 +120,6 @@ DetectFootprints = function(
 #' @importFrom plyranges filter
 #' @importFrom GenomicRanges GRanges findOverlaps
 #'
-#' @export
-#'
 AnnotateFootprints = function(footprints.df, chromosome, TFBSs){
 
   footprints.df %>%
@@ -156,8 +152,6 @@ AnnotateFootprints = function(footprints.df, chromosome, TFBSs){
 #' @importFrom GenomicRanges GRanges elementMetadata
 #' @importFrom plyranges find_overlaps
 #' 
-#' @export
-#'
 AggregateFootprints = function(footprints.df){
 
   groups = unique(paste(footprints.df$biological.state, footprints.df$TF, sep="."))
