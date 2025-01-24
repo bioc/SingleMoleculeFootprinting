@@ -22,7 +22,7 @@ Plot bulk SMF separately for each partition alognside footprint detection result
 
 Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 MethSM = Methylation[[2]]
-RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 
 FootprintCharter(

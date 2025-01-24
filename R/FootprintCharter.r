@@ -9,6 +9,7 @@
 #' @param n minimum number of molecules required per partition
 #' @param TF.length vector of two integers for footprint length bounds. Defaults to c(5,75). 
 #' @param nucleosome.length vector of two integers for footprint length bounds. Defaults to c(120,1000). 
+#' @param cytosine.coverage.thr Cytosine coverage threshold for footprint detection. Individual cytosines will be discarded, not whole footprints. Defaults to 5.
 #' @param verbose Defaults to TRUE
 #' 
 #' @importFrom parallelDist parDist
@@ -20,7 +21,7 @@
 #' 
 #' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 #' MethSM = Methylation[[2]]
-#' RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+#' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 #' 
 #' FootprintCharter(

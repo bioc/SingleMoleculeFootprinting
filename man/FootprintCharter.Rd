@@ -37,6 +37,8 @@ FootprintCharter(
 
 \item{nucleosome.length}{vector of two integers for footprint length bounds. Defaults to c(120,1000).}
 
+\item{cytosine.coverage.thr}{Cytosine coverage threshold for footprint detection. Individual cytosines will be discarded, not whole footprints. Defaults to 5.}
+
 \item{verbose}{Defaults to TRUE}
 }
 \description{
@@ -46,7 +48,7 @@ Run FootprintCharter
 
 Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 MethSM = Methylation[[2]]
-RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 
 FootprintCharter(

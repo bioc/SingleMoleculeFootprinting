@@ -13,7 +13,7 @@
 #' 
 #' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 #' MethSM = Methylation[[2]]
-#' RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+#' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 #' 
 #' FootprintCharter(
@@ -87,7 +87,7 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
 
 #' Plot single molecule heatmaps of footprint detection results
 #' 
-#' @param MethSM Single molecule matrix list as returned by CallContextMethylation()
+#' @param footprints.df data.frame of footprints as returned by FootprintCharter()
 #' @param RegionOfInterest GRanges interval to plot
 #' @param partitions.order integer vector specifying the order in which to plot partitions
 #' 
@@ -99,7 +99,7 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
 #' 
 #' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 #' MethSM = Methylation[[2]]
-#' RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+#' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 #' 
 #' FootprintCharter(

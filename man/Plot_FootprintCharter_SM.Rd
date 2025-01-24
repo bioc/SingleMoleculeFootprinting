@@ -7,11 +7,11 @@
 Plot_FootprintCharter_SM(footprints.df, RegionOfInterest, partitions.order)
 }
 \arguments{
+\item{footprints.df}{data.frame of footprints as returned by FootprintCharter()}
+
 \item{RegionOfInterest}{GRanges interval to plot}
 
 \item{partitions.order}{integer vector specifying the order in which to plot partitions}
-
-\item{MethSM}{Single molecule matrix list as returned by CallContextMethylation()}
 }
 \description{
 Plot single molecule heatmaps of footprint detection results
@@ -20,7 +20,7 @@ Plot single molecule heatmaps of footprint detection results
 
 Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
 MethSM = Methylation[[2]]
-RegionOfInterest = GRanges("chr6", IRanges(88106000, 88106500))
+RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
 
 FootprintCharter(

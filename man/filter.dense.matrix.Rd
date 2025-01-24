@@ -7,6 +7,8 @@
 \method{filter}{dense.matrix}(MethSM, RegionOfInterest, verbose = TRUE)
 }
 \arguments{
+\item{MethSM}{sparse MethSM as returned by CallContextMethylation()}
+
 \item{RegionOfInterest}{GRanges to analyse. Only the reads that cover continuously and entirely the range will be retained}
 
 \item{verbose}{TRUE/FALSE}

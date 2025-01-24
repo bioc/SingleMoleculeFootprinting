@@ -5,20 +5,20 @@
 \title{Detects TF and nucleosome footprints enriched in a single partition}
 \usage{
 .detect.footprints(
-  SM.matrix,
+  MethSM,
   TF.length = c(5, 75),
   nucleosome.length = c(120, 1000),
   cytosine.coverage.thr = 5
 )
 }
 \arguments{
+\item{MethSM}{sparse MethSM as returned by CallContextMethylation()}
+
 \item{TF.length}{vector of two integers for footprint length bounds. Defaults to c(5,75).}
 
 \item{nucleosome.length}{vector of two integers for footprint length bounds. Defaults to c(120,1000).}
 
 \item{cytosine.coverage.thr}{Cytosine coverage threshold for footprint detection. Individual cytosines will be discarded, not whole footprints. Defaults to 5.}
-
-\item{MethSM}{sparse MethSM as returned by CallContextMethylation()}
 }
 \description{
 Detects TF and nucleosome footprints enriched in a single partition

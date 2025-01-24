@@ -9,23 +9,23 @@
 #' @import dplyr
 #' 
 .detect.footprints = function(
-    SM.matrix,
+    MethSM,
     TF.length = c(5,75), 
     nucleosome.length = c(120,1000),
     cytosine.coverage.thr = 5
     ){
   
-  cytosine.coverage = as.integer(apply(SM.matrix, 2, function(x){sum(!is.na(x))}))
-  SM.matrix = SM.matrix[,cytosine.coverage>=cytosine.coverage.thr,drop=FALSE]
+  cytosine.coverage = as.integer(apply(MethSM, 2, function(x){sum(!is.na(x))}))
+  MethSM = MethSM[,cytosine.coverage>=cytosine.coverage.thr,drop=FALSE]
   
-  median.molecule = as.numeric(1 - miscTools::colMedians(SM.matrix, na.rm = TRUE))
+  median.molecule = as.numeric(1 - miscTools::colMedians(MethSM, na.rm = TRUE))
   median.molecule = ceiling(median.molecule) # rounds up to integer 0.5 cases
   fp.rle = rle(median.molecule)
   data.frame(
     nr.cytosines = fp.rle$lengths, 
     occupancy = fp.rle$values, 
-    start = as.numeric(colnames(SM.matrix)[c(0, head(cumsum(fp.rle$lengths), -1)) + 1]),
-    end = as.numeric(colnames(SM.matrix)[cumsum(fp.rle$lengths)])
+    start = as.numeric(colnames(MethSM)[c(0, head(cumsum(fp.rle$lengths), -1)) + 1]),
+    end = as.numeric(colnames(MethSM)[cumsum(fp.rle$lengths)])
     ) -> rle.df
   
   # extend footprints/accessible stretches to the middle point between cytosines
@@ -96,7 +96,7 @@ DetectFootprints = function(
     seq_along(MethSM_list), 
     function(i){
       .detect.footprints(
-        SM.matrix = MethSM_list[[i]], 
+        MethSM = MethSM_list[[i]], 
         TF.length = TF.length, 
         nucleosome.length = nucleosome.length,
         cytosine.coverage.thr = cytosine.coverage.thr
