@@ -32,7 +32,7 @@
 #'   MethSM = MethSM, 
 #'   partitioned.molecules = FC_results$partitioned.molecules, 
 #'   footprints.df = FC_results$footprints.df, 
-#'   TFBSs = TFBSs
+#'   TFBSs = NULL
 #'   )
 #'
 PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
