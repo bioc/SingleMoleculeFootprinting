@@ -12,8 +12,8 @@ fill.empty.columns(MethSM, verbose = TRUE)
 \item{verbose}{TRUE/FALSE}
 }
 \description{
-PROBLEM: when computing the sliding window matrix sometimes there are colummns that are etnirely NAs
-         because two nearest cytosines are further away from each other than the size of the sliding window used.
-         As a ducktape solution to keep working I'll fill these columns with the mean value from the two surorunding cytosines
-         (as long as the number of columns to be completely NAs is lower than 20)
+when computing the sliding window matrix sometimes there are columns that are entirely NAs
+because two nearest cytosines are further away from each other than the size of the sliding window used.
+As a solution we fill these columns with the mean value from the two surrounding cytosines
+(as long as the number of columns to be entirely NAs is lower than 20)
 }

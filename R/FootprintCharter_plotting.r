@@ -92,6 +92,7 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
 #' @param partitions.order integer vector specifying the order in which to plot partitions
 #' 
 #' @import dplyr ggplot2
+#' @importFrom tidyr unnest
 #' 
 #' @export
 #' 
@@ -149,10 +150,9 @@ Plot_FootprintCharter_SM = function(footprints.df, RegionOfInterest, partitions.
     mutate(read.idx = as.factor(read.idx)) -> PlottingDF
 
   PlottingDF %>%
-    ggplot(aes(x = start, y = read.idx, fill=biological.state)) +
+    ggplot(aes(x = start, y = read.idx, fill = biological.state)) +
     geom_tile() +
     facet_wrap(~.data$sample, scales = "free_y", dir = 'v') +
-    scale_x_continuous(limits = x.axis.breaks, breaks = x.axis.breaks, labels = format(x.axis.breaks, nsmall=1, big.mark=",")) +
     scale_fill_manual(breaks = c("TF", "accessible", "nucleosome", "noise", "unrecognized"), values = c("dodgerblue4", "darkseagreen", "deepskyblue3", "red3", "orange3")) +
     xlab(as.character(seqnames(RegionOfInterest))) + 
     ylab(paste0(sum(distinct(fp.df, partition.nr, partition.coverage)$partition.coverage), " molecules")) +

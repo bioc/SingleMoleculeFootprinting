@@ -150,7 +150,12 @@ PlotSM(
   RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
   SortedReads = FC_results$partitioned.molecules, 
   sorting.strategy = "custom"
-  )
+  ) +
+  scale_x_continuous(
+    limits = x.axis.breaks, 
+    breaks = x.axis.breaks, 
+    labels = format(x.axis.breaks, nsmall=1, big.mark=",")
+    )
 ```
 
 It might be desirable to arrange partitions according to a biologically meaningful order, such as TF binding and cobinding.
@@ -166,7 +171,12 @@ PlotSM(
   RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
   SortedReads = ordered.molecules, 
   sorting.strategy = "custom"
-  )
+  ) +
+  scale_x_continuous(
+    limits = x.axis.breaks, 
+    breaks = x.axis.breaks, 
+    labels = format(x.axis.breaks, nsmall=1, big.mark=",")
+    )
 ```
 
 Single molecules displaying *FootprintCharter* annotations can be plotted using the *Plot_FootprintCharter_SM* function.
@@ -176,13 +186,12 @@ Plot_FootprintCharter_SM(
   footprints.df = FC_results$footprints.df, 
   RegionOfInterest = IRanges::resize(RegionOfInterest, 500, "center"), 
   partitions.order = partitions.order
-)
-```
-
-## Genome-wide wrapper
-
-```{r}
-
+) +
+  scale_x_continuous(
+    limits = x.axis.breaks, 
+    breaks = x.axis.breaks, 
+    labels = format(x.axis.breaks, nsmall=1, big.mark=",")
+    )
 ```
 
 ## sessionInfo
