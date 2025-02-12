@@ -130,9 +130,9 @@ MethSM.to.MethGR = function(MethSM, chromosome){
 #' @param genome BSgenome
 #' @param thr Double between 0 and 1. Threshold below which to filter reads.
 #'
-#' @import GenomicRanges
-#' @import Biostrings
-#' @importFrom IRanges IRanges
+#' @importFrom GenomicRanges GRanges
+#' @importFrom Biostrings getSeq vcountPattern
+#' @importFrom IRanges IRanges resize
 #'
 #' @return Filtered MethSM
 #'
@@ -202,8 +202,9 @@ DetectExperimentType = function(Samples){
 #' @param genome BSgenome
 #' @param context Context of interest (e.g. "GC", "CG",..)
 #'
-#' @import GenomicRanges
-#' @import Biostrings
+#' @importFrom GenomicRanges GRanges ranges strand width
+#' @importFrom Biostrings seqinfo getSeq vcountPattern
+#' @importFrom IRanges resize
 #'
 #' @return filtered Granges obj
 #'
@@ -308,8 +309,8 @@ CollapseStrands = function(MethGR, context){
 #' @param genome BSgenome
 #' @param chr Chromosome, MethSM doesn't carry this info
 #'
-#' @import GenomicRanges
-#' @import Biostrings
+#' @importFrom GenomicRanges GRanges
+#' @importFrom Biostrings getSeq
 #' @importFrom IRanges IRanges
 #' @importFrom Matrix rowSums
 #'
@@ -408,9 +409,10 @@ CoverageFilter = function(MethGR, thr){
 #' @param clObj cluster object for parallel processing of multiple samples. For now only used by qMeth call for bulk methylation. Should be the output of a parallel::makeCluster() call
 #' @param verbose whether to print out messages while executing. Defaults to FALSE
 #'
-#' @import QuasR
-#' @import GenomicRanges
-#' @import BiocGenerics
+#' @importFrom QuasR qMeth
+#' @importFrom GenomicRanges seqnames
+#' @importFrom S4Vectors elementMetadata
+#' @importFrom Matrix rsparsematrix
 #'
 #' @return List with two Granges objects: average methylation call (GRanges) and single molecule methylation call (matrix)
 #' 
@@ -451,7 +453,9 @@ CallContextMethylation = function(sampleFile, samples, genome, RegionOfInterest,
     }
     MethGR = MethSM.to.MethGR(MethSM = MethSM, chromosome = unique(seqnames(RegionOfInterest)))
   } else {
-    MethGR = QuasR::qMeth(QuasRprj_sample, mode="allC", query = RegionOfInterest, collapseBySample = TRUE, keepZero = TRUE, clObj = clObj) %>% sort()
+    MethGR = sort(
+      QuasR::qMeth(QuasRprj_sample, mode="allC", query = RegionOfInterest, collapseBySample = TRUE, keepZero = TRUE, clObj = clObj)
+      )
   }
   
   if(verbose){message("checking if RegionOfInterest contains information at all")}
@@ -481,38 +485,43 @@ CallContextMethylation = function(sampleFile, samples, genome, RegionOfInterest,
   ContextFilteredMethGR = list(GC = FilterContextCytosines(MethGR, genome, "GC"),
                                CG = FilterContextCytosines(MethGR, genome, "HCG"))
   if (returnSM){
-    ContextFilteredMethSM = lapply(seq_along(MethSM),
-                                   function(n){lapply(seq_along(ContextFilteredMethGR),
-                                                      function(i){MethSM[[n]][,colnames(MethSM[[n]]) %in% as.character(start(ContextFilteredMethGR[[i]])), drop=FALSE]})})
-  }
+    ContextFilteredMethSM = lapply(
+      seq_along(MethSM), function(n){
+        lapply(
+          seq_along(ContextFilteredMethGR), function(i){
+            MethSM[[n]][,colnames(MethSM[[n]]) %in% as.character(start(ContextFilteredMethGR[[i]])), drop=FALSE]
+          })})
+    }
   
   if(verbose){message("Collapsing strands")}
   StrandCollapsedMethGR = list(GC = CollapseStrands(MethGR = ContextFilteredMethGR[[1]], context = "GC"),
                                CG = CollapseStrands(MethGR = ContextFilteredMethGR[[2]], context = "HCG"))
   if (returnSM){
-    StrandCollapsedMethSM = lapply(seq_along(ContextFilteredMethSM),
-                                   function(n){
-                                     list(GC = CollapseStrandsSM(ContextFilteredMethSM[[n]][[1]], context = "GC", genome = genome, chr = as.character(seqnames(RegionOfInterest))),
-                                          CG = CollapseStrandsSM(ContextFilteredMethSM[[n]][[2]], context = "HCG", genome = genome, chr = as.character(seqnames(RegionOfInterest))))})
-  }
+    StrandCollapsedMethSM = lapply(
+      seq_along(ContextFilteredMethSM), function(n){
+        list(GC = CollapseStrandsSM(ContextFilteredMethSM[[n]][[1]], context = "GC", genome = genome, chr = as.character(seqnames(RegionOfInterest))),
+             CG = CollapseStrandsSM(ContextFilteredMethSM[[n]][[2]], context = "HCG", genome = genome, chr = as.character(seqnames(RegionOfInterest))))
+      })
+    }
   
   if(verbose){message("Filtering Cs for coverage")}
   CoverageFilteredMethGR = list(GC = CoverageFilter(MethGR = StrandCollapsedMethGR[[1]], thr = coverage),
                                 CG = CoverageFilter(MethGR = StrandCollapsedMethGR[[2]], thr = coverage))
   
   if (returnSM){
-    CoverageFilteredMethSM = lapply(seq_along(StrandCollapsedMethSM),
-                                    function(n){lapply(seq_along(CoverageFilteredMethGR),
-                                                       function(i){
-                                                         SampleCoverageColumn = grep("_Coverage$", colnames(elementMetadata(CoverageFilteredMethGR[[i]])))[n]
-                                                         if(is.na(SampleCoverageColumn)){SampleCoverageColumn = NULL}
-                                                         CsCoveredEnough = as.character(start(CoverageFilteredMethGR[[i]]))[
-                                                           !is.na(data.frame(elementMetadata(CoverageFilteredMethGR[[i]])[,SampleCoverageColumn]))]
-                                                         x = StrandCollapsedMethSM[[n]][[i]][,colnames(StrandCollapsedMethSM[[n]][[i]]) %in% CsCoveredEnough, drop=FALSE]
-                                                         if (any(dim(x) == 0)){x = Matrix::rsparsematrix(nrow=0,ncol=0,density = 0)}
-                                                         x
-                                                       })})
-  }
+    CoverageFilteredMethSM = lapply(
+      seq_along(StrandCollapsedMethSM), function(n){
+        lapply(
+          seq_along(CoverageFilteredMethGR), function(i){
+            SampleCoverageColumn = grep("_Coverage$", colnames(elementMetadata(CoverageFilteredMethGR[[i]])))[n]
+            if(is.na(SampleCoverageColumn)){SampleCoverageColumn = NULL}
+            CsCoveredEnough = as.character(start(CoverageFilteredMethGR[[i]]))[
+              !is.na(data.frame(elementMetadata(CoverageFilteredMethGR[[i]])[,SampleCoverageColumn]))]
+            x = StrandCollapsedMethSM[[n]][[i]][,colnames(StrandCollapsedMethSM[[n]][[i]]) %in% CsCoveredEnough, drop=FALSE]
+            if (any(dim(x) == 0)){x = Matrix::rsparsematrix(nrow=0,ncol=0,density = 0)}
+            x
+          })})
+    }
   
   # Determining strict context based on ExpType
   ExpType = DetectExperimentType(samples)

@@ -1,6 +1,6 @@
 Package: SingleMoleculeFootprinting
 Title: Analysis tools for Single Molecule Footprinting (SMF) data
-Version: 2.1.0
+Version: 2.1.2
 Authors@R: c(
     person(given = "Guido",
            family = "Barzaghi",
@@ -19,7 +19,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-7800-3848"))
     )
 Depends:
-  R (>= 4.4.1)
+    R (>= 4.4.1)
 Imports:
     BiocGenerics,
     Biostrings,
@@ -63,7 +63,7 @@ Description: SingleMoleculeFootprinting provides functions
     classify single molecules based on their patterns of molecular occupancy,
     plot SMF information at a given genomic location.
 biocViews: 
-	DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl, Sequencing
+	  DNAMethylation, Coverage, NucleosomePositioning, DataRepresentation, Epigenetics, MethylSeq, QualityControl, Sequencing
 URL: https://www.bioconductor.org/packages/release/bioc/html/SingleMoleculeFootprinting.html
 BugReports: https://github.com/Krebslabrep/SingleMoleculeFootprinting/issues
 License: GPL-3

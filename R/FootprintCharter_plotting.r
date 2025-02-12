@@ -5,7 +5,10 @@
 #' @param footprints.df data.frame of footprints as returned by FootprintCharter()
 #' @param TFBSs TFBSs annotation at the RegionOfInterest (optional).
 #'
-#' @import dplyr
+#' @importFrom dplyr summarise group_by as_tibble select
+#' @importFrom magrittr %<>%
+#' @importFrom stats na.omit
+#' @import ggplot2
 #'
 #' @export
 #' 
@@ -91,8 +94,10 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
 #' @param RegionOfInterest GRanges interval to plot
 #' @param partitions.order integer vector specifying the order in which to plot partitions
 #' 
-#' @import dplyr ggplot2
+#' @importFrom dplyr rowwise mutate ungroup select arrange distinct group_by
+#' @import ggplot2
 #' @importFrom tidyr unnest
+#' @importFrom GenomicRanges seqnames
 #' 
 #' @export
 #' 

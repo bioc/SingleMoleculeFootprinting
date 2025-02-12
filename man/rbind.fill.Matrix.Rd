@@ -4,7 +4,7 @@
 \alias{rbind.fill.Matrix}
 \title{Implementation performing a similar operation of plyr::rbind.fill.matrix but for sparseMatrix}
 \usage{
-rbind.fill.Matrix(x, y)
+\method{rbind}{fill.Matrix}(x, y)
 }
 \arguments{
 \item{x}{sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)}

@@ -281,8 +281,10 @@ Arrange_TFBSs_clusters = function(
 #' @param fix.window.size Defaults to FALSE. When TRUE, overrides arguments max_intercluster_distance and max_window_width and produces windows containing a fixed number of TFBS_clusters.
 #' @param max.window.size Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if RegionsOfInterest overlap
 #' 
-#' @import GenomicRanges
-#' @import plyranges
+#' @importFrom IRanges resize start end width reduce
+#' @importFrom GenomicRanges findOverlaps seqnames GRanges
+#' @importFrom plyranges reduce_ranges mutate group_by summarise select
+#' @importFrom S4Vectors subjectHits
 #' 
 #' @return GRanges object of window coordinates to be used for more efficient calls of CallContextMethylation 
 #' 

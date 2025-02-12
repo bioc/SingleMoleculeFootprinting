@@ -97,7 +97,7 @@ SortReads_internal = function(SortedReads, SM_mat, isClusters){ # this orders re
 #' 
 #' @param MethSM one single molecule sparse matrix
 #' 
-#' @import Matrix
+#' @importFrom Matrix colSums
 #'  
 #' @return colMeans (N.b. this is +1 based)
 #'  
@@ -111,7 +111,7 @@ colMeans_drop0 <- function (MethSM) {
 #' 
 #' @param MethSM one single molecule sparse matrix
 #' 
-#' @import Matrix
+#' @importFrom Matrix rowSums
 #'  
 #' @return rowMeans (N.b. this is +1 based)
 #'  
@@ -132,8 +132,8 @@ rowMeans_drop0 <- function (MethSM) {
 #' @param MethSM_filtered Single Molecule methylation matrix after filtering reads
 #' @param sampleIndex index for sample to treat. It serves as a correspondence between the index of the SM matrix and the order samples appear in the elementMetadata() columns
 #' 
-#' @import Matrix
-#' @import GenomicRanges
+#' @importFrom GenomicRanges start
+#' @importFrom S4Vectors elementMetadata
 #' 
 #' @return MethGR with recalculated counts
 #' 

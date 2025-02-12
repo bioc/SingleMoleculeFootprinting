@@ -53,8 +53,6 @@ BinMethylation = function(MethSM, Bin){
 #' @param BinsCoordinates IRanges object of absolute coordinates for sorting bins
 #' @param coverage integer. Minimum number of reads covering all sorting bins for sorting to be performed
 #'
-#' @import BiocGenerics
-#'
 #' @return list of sorted reads
 #'
 #' @export

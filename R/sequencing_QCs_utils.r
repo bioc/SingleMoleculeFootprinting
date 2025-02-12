@@ -29,7 +29,7 @@ SubsetGRangesForSamples = function(GRanges_obj, Samples){
 #'
 #' @param GRanges_obj GRanges object as returned by CallContextMethylation function
 #'
-#' @import dplyr
+#' @importFrom dplyr as_tibble select mutate group_by summarise ungroup
 #' @importFrom tidyr spread gather extract
 #' @importFrom stats na.omit
 #' @importFrom rlang .data

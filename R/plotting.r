@@ -276,8 +276,10 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
 #' 
 #' @return Bar plot quantifying states
 #' 
-#' @import dplyr
+#' @importFrom dplyr as_tibble mutate arrange left_join desc
+#' @importFrom tidyr gather separate
 #' @importFrom rlang .data
+#' @import ggplot2
 #'
 #' @export
 #'

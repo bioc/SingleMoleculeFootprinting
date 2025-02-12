@@ -6,7 +6,7 @@
 #' @param cytosine.coverage.thr Cytosine coverage threshold for footprint detection. Individual cytosines will be discarded, not whole footprints. Defaults to 5.
 #' 
 #' @importFrom miscTools colMedians
-#' @import dplyr
+#' @importFrom dplyr mutate
 #' 
 .detect.footprints = function(
     MethSM,
@@ -75,7 +75,7 @@
 #' @param nucleosome.length vector of two integers for footprint length bounds. Defaults to c(120,1000). 
 #' @param cytosine.coverage.thr Cytosine coverage threshold for footprint detection. Individual cytosines will be discarded, not whole footprints. Defaults to 5.
 #' 
-#' @import dplyr
+#' @importFrom dplyr mutate arrange select
 #' 
 DetectFootprints = function(
     MethSM, 
@@ -148,9 +148,10 @@ AnnotateFootprints = function(footprints.df, chromosome, TFBSs){
 #'
 #' @param footprints.df data.frame of footprints as returned by FootprintCharter() or internally by DetectFootprints() or AnnotateFootprints()
 #' 
-#' @importFrom dplyr  mutate arrange filter
+#' @importFrom dplyr mutate arrange filter
 #' @importFrom GenomicRanges GRanges elementMetadata
 #' @importFrom plyranges find_overlaps
+#' @importFrom magrittr %<>%
 #' 
 AggregateFootprints = function(footprints.df){
 

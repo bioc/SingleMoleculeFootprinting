@@ -4,7 +4,7 @@
 \alias{cbind.fill.Matrix}
 \title{Implementation performing a similar operation of rbind.fill.Matrix but for columns}
 \usage{
-cbind.fill.Matrix(x, y)
+\method{cbind}{fill.Matrix}(x, y)
 }
 \arguments{
 \item{x}{sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)}

@@ -9,12 +9,14 @@
 #' @param ConvRate.thr Convesion rate threshold. Double between 0 and 1, defaults to NULL For more information, check out the details section
 #' @param cores number of cores to use
 #'
-#' @import GenomicRanges
-#' @import dplyr
-#' @importFrom tidyr separate
+#' @importFrom IRanges resize
 #' @importFrom parallel makeCluster stopCluster
+#' @importFrom GenomicRanges findOverlaps
+#' @importFrom S4Vectors queryHits subjectHits elementMetadata
+#' @importFrom dplyr mutate select
 #' @importFrom rlang .data
-#'
+#' @importFrom tidyr gather spread
+#' 
 #' @return data.frame of bulk SMF info ready for plotting
 #'
 #' @export
@@ -92,8 +94,7 @@ CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, cove
 #' @param span the span parameter to pass to geom_smooth
 #' @param TF string of TF name to use for plot title
 #' 
-#' @import ggplot2
-#' @import viridis
+#' @import ggplot2 viridis
 #' @importFrom ggpointdensity geom_pointdensity
 #' @importFrom rlang .data
 #' 

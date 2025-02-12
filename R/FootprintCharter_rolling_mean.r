@@ -2,7 +2,7 @@
 #'
 #' @param MethSM sparse MethSM as returned by CallContextMethylation()
 #'
-#' @import magrittr
+#' @importFrom magrittr equals
 #' 
 MethSM.to.dense = function(MethSM){
   
