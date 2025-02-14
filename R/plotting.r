@@ -9,11 +9,15 @@
 #' @param SNPs GRanges object of SNPs to visualize. Assumed to be already subset. Assumed to have the reference and alternative sequences respectively under the columns "R" and "A"
 #' @param SortingBins GRanges object of sorting bins (absolute) coordinate to visualize
 #'
-#' @import GenomicRanges
-#' @import tidyverse
-#' @importFrom plyr .
+#' @importFrom dplyr as_tibble select filter arrange mutate rowwise
+#' @importFrom tidyr gather
+#' @importFrom rlang .data
+#' @importFrom stringr str_detect
+#' @importFrom magrittr %>%
 #' @importFrom stats na.omit
+#' @import ggplot2
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom GenomicRanges start end
 #'
 #' @export
 #'
@@ -89,7 +93,7 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
   if(!is.null(SortingBins)){
     SortingBins %>%
       as.data.frame() %>%
-      select(.data$start, .data$end) -> Bins_PlottingDF
+      dplyr::select(.data$start, .data$end) -> Bins_PlottingDF
   }
 
   PlottingDF %>%
@@ -116,11 +120,14 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
 #' @param MethSM Single molecule methylation matrix
 #' @param RegionOfInterest GRanges interval to plot
 #'
-#' @import GenomicRanges
-#' @import tidyverse
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate group_by summarise ungroup select
+#' @importFrom tidyr gather
 #' @importFrom tibble rownames_to_column
 #' @importFrom stats na.omit
 #' @importFrom rlang .data
+#' @import ggplot2
+#' @importFrom GenomicRanges start end
 #'
 #' @export
 #'
@@ -204,7 +211,6 @@ PlotSingleMoleculeStack = function(MethSM, RegionOfInterest){
 #' The argument sorting,strategy will always determine how to display reads with priority over the argument SortedReads
 #' @param SortedReads Defaults to NULL, in which case will plot unsorted reads. Sorted reads object as returned by SortReads function 
 #'  
-#'
 #' @export
 #'
 #' @examples
