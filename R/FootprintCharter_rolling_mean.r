@@ -22,6 +22,10 @@ MethSM.to.dense = function(MethSM){
 #' @param RegionOfInterest GRanges to analyse. Only the reads that cover continuously and entirely the range will be retained
 #' @param verbose TRUE/FALSE
 #' 
+#' @importFrom IRanges resize
+#' @importFrom GenomicRanges width GRanges seqnames findOverlaps
+#' @importFrom S4Vectors queryHits
+#' 
 filter.dense.matrix = function(MethSM, RegionOfInterest, verbose = TRUE){
   
   NA.thr.rows = 0
@@ -141,6 +145,8 @@ fill.empty.columns = function(MethSM, verbose = TRUE){
 #' @param MethSM sparse MethSM as returned by CallContextMethylation()
 #' @param RegionOfInterest GRanges to analyse. Only the reads that cover continuously and entirely the range will be retained
 #' @param verbose TRUE/FALSE
+#' 
+#' @importFrom magrittr %>%
 #' 
 #' @export
 #' 

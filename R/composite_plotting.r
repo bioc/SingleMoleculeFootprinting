@@ -94,7 +94,8 @@ CollectCompositeData = function(sampleFile, samples, genome, TFBSs, window, cove
 #' @param span the span parameter to pass to geom_smooth
 #' @param TF string of TF name to use for plot title
 #' 
-#' @import ggplot2 viridis
+#' @import ggplot2 
+#' @importFrom viridis scale_fill_viridis scale_color_viridis
 #' @importFrom ggpointdensity geom_pointdensity
 #' @importFrom rlang .data
 #' 

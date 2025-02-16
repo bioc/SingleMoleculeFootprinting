@@ -14,6 +14,10 @@
 #' 
 #' @importFrom parallelDist parDist
 #' @importFrom cluster pam silhouette
+#' @importFrom GenomeInfoDb seqnames
+#' @importFrom tibble rownames_to_column
+#' @importFrom tidyr gather
+#' @importFrom dplyr right_join select arrange
 #' 
 #' @export
 #' 
@@ -52,7 +56,7 @@ FootprintCharter = function(
   
   if(verbose){message("1. Pooling molecules from all samples")}
   read.origin = lapply(MethSM, rownames)
-  MethSM_pooled = Reduce(rbind.fill.Matrix, MethSM)
+  MethSM_pooled = Reduce(rbind_fill_sparseMatrix, MethSM)
   
   if(verbose){message("2. Computing sliding windows")}
   MethSM_smoothed = RollingMean(MethSM = MethSM_pooled, RegionOfInterest = RegionOfInterest, verbose = verbose)

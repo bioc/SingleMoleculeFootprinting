@@ -9,7 +9,7 @@ full.join.granges = function(MethGR1, MethGR2){
   
 }
 
-#' Implementation performing a similar operation of plyr::rbind.fill.matrix but for sparseMatrix
+#' Implementation performing a similar operation of plyr::rbind_fill_sparseMatrix but for sparseMatrix
 #' 
 #' @param x sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
 #' @param y sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
@@ -28,9 +28,9 @@ full.join.granges = function(MethGR1, MethGR2){
 #' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
 #' package="SingleMoleculeFootprinting"))
 #' MethSM_2 = Methylation[[2]][[1]]
-#' rbind.fill.Matrix(MethSM_1, MethSM_2)
+#' rbind_fill_sparseMatrix(MethSM_1, MethSM_2)
 #' 
-rbind.fill.Matrix = function(x,y){
+rbind_fill_sparseMatrix = function(x,y){
   
   ymiss = colnames(x)[which(is.na(match(colnames(x),colnames(y))))]
   ybind = Matrix::rsparsematrix(nrow=as.double(nrow(y)),ncol=as.double(length(ymiss)),density = 0)
@@ -59,12 +59,14 @@ rbind.fill.Matrix = function(x,y){
   
 }
 
-#' Implementation performing a similar operation of rbind.fill.Matrix but for columns
+#' Implementation performing a similar operation of rbind_fill_sparseMatrix but for columns
 #' 
 #' @param x sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
 #' @param y sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
 #' 
 #' @details N.b. only possible fill at the moment is 0
+#' 
+#' @importFrom Matrix rsparsematrix
 #' 
 #' @export 
 #' 
@@ -76,9 +78,9 @@ rbind.fill.Matrix = function(x,y){
 #' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", 
 #' package="SingleMoleculeFootprinting"))
 #' MethSM_2 = Methylation[[2]][[1]]
-#' cbind.fill.Matrix(MethSM_1, MethSM_2)
+#' cbind_fill_sparseMatrix(MethSM_1, MethSM_2)
 #' 
-cbind.fill.Matrix = function(x,y){
+cbind_fill_sparseMatrix = function(x,y){
   
   ymiss = rownames(x)[which(is.na(match(rownames(x),rownames(y))))]
   ybind = rsparsematrix(nrow=as.double(length(ymiss)),ncol=as.double(ncol(y)),density = 0)

@@ -344,7 +344,7 @@ CollapseStrandsSM = function(MethSM, context, genome, chr){
   colnames(MethSM_minus) = as.character(as.numeric(colnames(MethSM_minus)) + offset)
 
   # Merge matrixes
-  StrandCollapsedSM = rbind.fill.Matrix(x = MethSM_minus, y = MethSM_plus)
+  StrandCollapsedSM = rbind_fill_sparseMatrix(x = MethSM_minus, y = MethSM_plus)
 
   return(StrandCollapsedSM)
 
@@ -552,7 +552,7 @@ CallContextMethylation = function(sampleFile, samples, genome, RegionOfInterest,
     NAMES = unique(gsub("_Coverage$", "", grep("_Coverage$", colnames(elementMetadata(MergedGR)), value=TRUE)))
     if (returnSM){
       MergedSM = lapply(seq_along(ContextFilteredMethSM_strict), function(n){
-        Reduce(cbind.fill.Matrix, ContextFilteredMethSM_strict[[n]])
+        Reduce(cbind_fill_sparseMatrix, ContextFilteredMethSM_strict[[n]])
         })
       }
   } else {

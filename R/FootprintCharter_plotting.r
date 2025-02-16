@@ -52,7 +52,7 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
     group_by(partition.nr, start, end, biological.state) %>%
     summarise(partition.coverage = sum(partition.coverage), .groups = "drop")
   
-  MethSM_pooled = Reduce(rbind.fill.Matrix, MethSM)
+  MethSM_pooled = Reduce(rbind_fill_sparseMatrix, MethSM)
   MethSM_dense = MethSM.to.dense(MethSM_pooled)
   lapply(partitioned.molecules_list, function(single.molecules){
     MethSM_dense[single.molecules,,drop=FALSE]
