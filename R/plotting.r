@@ -37,7 +37,7 @@ PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, S
   # Prepare SMF data
   MethGR %>%
     as_tibble() %>%
-    dplyr::select(-grep("_Coverage$", colnames(.)), -.data$end, -.data$width, -.data$strand) %>%
+    dplyr::select(-grep("_Coverage$", colnames(.data)), -.data$end, -.data$width, -.data$strand) %>%
     gather(sample, MethRate, -.data$seqnames, -.data$start, -.data$GenomicContext) %>%
     na.omit() -> PlottingDF
   
@@ -282,6 +282,7 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
 #' 
 #' @return Bar plot quantifying states
 #' 
+#' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble mutate arrange left_join desc
 #' @importFrom tidyr gather separate
 #' @importFrom rlang .data
@@ -294,8 +295,9 @@ PlotSM = function(MethSM, RegionOfInterest, sorting.strategy="classical", Sorted
 #' library(GenomicRanges)
 #' 
 #' RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
-#' package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
 #' SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 #'

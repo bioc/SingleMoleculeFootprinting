@@ -9,7 +9,7 @@ full.join.granges = function(MethGR1, MethGR2){
   
 }
 
-#' Implementation performing a similar operation of plyr::rbind_fill_sparseMatrix but for sparseMatrix
+#' Implementation performing a similar operation of the plyr function rbind.fill.matrix but for sparseMatrix
 #' 
 #' @param x sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
 #' @param y sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)
@@ -17,6 +17,7 @@ full.join.granges = function(MethGR1, MethGR2){
 #' @details N.b. only possible fill at the moment is 0
 #' 
 #' @importFrom Matrix rsparsematrix
+#' @importFrom methods cbind2 rbind2
 #' 
 #' @export 
 #' 
@@ -67,6 +68,7 @@ rbind_fill_sparseMatrix = function(x,y){
 #' @details N.b. only possible fill at the moment is 0
 #' 
 #' @importFrom Matrix rsparsematrix
+#' @importFrom methods cbind2 rbind2
 #' 
 #' @export 
 #' 
@@ -286,6 +288,7 @@ Arrange_TFBSs_clusters = function(
 #' @importFrom IRanges resize start end width reduce
 #' @importFrom GenomicRanges findOverlaps seqnames GRanges
 #' @importFrom plyranges reduce_ranges mutate group_by summarise select
+#' @importFrom rlang .data
 #' @importFrom S4Vectors subjectHits
 #' 
 #' @return GRanges object of window coordinates to be used for more efficient calls of CallContextMethylation 

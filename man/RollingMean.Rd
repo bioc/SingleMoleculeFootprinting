@@ -18,7 +18,9 @@ higher level wrapper
 }
 \examples{
 
-Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+Methylation = qs::qread(system.file(
+    "extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"
+    ))
 MethSM = Methylation[[2]]$SMF_MM_TKO_DE_
 RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")

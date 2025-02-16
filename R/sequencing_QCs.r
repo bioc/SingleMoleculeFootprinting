@@ -11,7 +11,7 @@
 #' @importFrom parallel makeCluster stopCluster
 #' @importFrom BSgenome getSeq
 #' @importFrom IRanges resize
-#' @importFrom Biostrings vcountPattern
+#' @importFrom Biostrings vcountPattern DNAString
 #' @importFrom BiocGenerics grep
 #'
 #' @export

@@ -23,7 +23,12 @@ The idea here is that (regardless of context) if a C is on the - strand, calling
 }
 \examples{
 
-Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
-CollapseStrandsSM(Methylation[[2]][[1]], "GC", BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10, "chr19")
+Methylation = qs::qread(system.file(
+    "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+    ))
+CollapseStrandsSM(
+    Methylation[[2]][[1]], "GC", 
+    BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10, "chr19"
+    )
 
 }

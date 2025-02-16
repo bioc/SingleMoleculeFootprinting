@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylation_calling_utils.r
 \name{rbind_fill_sparseMatrix}
 \alias{rbind_fill_sparseMatrix}
-\title{Implementation performing a similar operation of plyr::rbind_fill_sparseMatrix but for sparseMatrix}
+\title{Implementation performing a similar operation of the plyr function rbind.fill.matrix but for sparseMatrix}
 \usage{
 rbind_fill_sparseMatrix(x, y)
 }
@@ -12,7 +12,7 @@ rbind_fill_sparseMatrix(x, y)
 \item{y}{sparse matrix constructed using the function Matrix::sparseMatrix. Should have Dimnames and dims (e.g. when indexing drop=FALSE)}
 }
 \description{
-Implementation performing a similar operation of plyr::rbind_fill_sparseMatrix but for sparseMatrix
+Implementation performing a similar operation of the plyr function rbind.fill.matrix but for sparseMatrix
 }
 \details{
 N.b. only possible fill at the moment is 0

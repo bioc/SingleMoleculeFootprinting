@@ -7,6 +7,7 @@
 #' 
 #' @importFrom miscTools colMedians
 #' @importFrom dplyr mutate
+#' @importFrom utils head
 #' 
 .detect.footprints = function(
     MethSM,

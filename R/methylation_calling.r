@@ -259,7 +259,9 @@ FilterContextCytosines = function(MethGR, genome, context){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' MethGR = plyranges::filter(Methylation[[1]], GenomicContext == "GCH")
 #' CollapseStrands(MethGR = MethGR, context = "GC")
 #'
@@ -320,8 +322,13 @@ CollapseStrands = function(MethGR, context){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
-#' CollapseStrandsSM(Methylation[[2]][[1]], "GC", BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10, "chr19")
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+#'     ))
+#' CollapseStrandsSM(
+#'     Methylation[[2]][[1]], "GC", 
+#'     BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10, "chr19"
+#'     )
 #'
 CollapseStrandsSM = function(MethSM, context, genome, chr){
 
@@ -363,7 +370,9 @@ CollapseStrandsSM = function(MethSM, context, genome, chr){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' CoverageFilter(MethGR = Methylation[[1]], thr = 20)
 #'
 CoverageFilter = function(MethGR, thr){

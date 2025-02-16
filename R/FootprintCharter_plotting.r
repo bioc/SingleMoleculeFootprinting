@@ -14,7 +14,9 @@
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' MethSM = Methylation[[2]]
 #' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
@@ -103,7 +105,9 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' MethSM = Methylation[[2]]
 #' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")

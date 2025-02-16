@@ -22,8 +22,9 @@ Plot states quantification bar
 library(GenomicRanges)
 
 RegionOfInterest = GRanges("chr12", IRanges(20464551, 20465050))
-Methylation = qs::qread(system.file("extdata", "Methylation_3.qs", 
-package="SingleMoleculeFootprinting"))
+Methylation = qs::qread(system.file(
+    "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
+    ))
 TFBSs = qs::qread(system.file("extdata", "TFBSs_3.qs", package="SingleMoleculeFootprinting"))
 SortedReads = SortReadsBySingleTF(MethSM = Methylation[[2]], TFBS = TFBSs)
 

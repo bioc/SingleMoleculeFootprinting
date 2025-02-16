@@ -8,9 +8,9 @@ MethSM.to.dense = function(MethSM){
   
   MethSM %>%
     as.matrix() %>% 
-    replace(magrittr::equals(.,0), NA) %>% 
-    replace(magrittr::equals(.,1), 0) %>% 
-    replace(magrittr::equals(.,2), 1) -> dense.MethSM
+    replace(magrittr::equals(., 0), NA) %>% 
+    replace(magrittr::equals(., 1), 0) %>% 
+    replace(magrittr::equals(., 2), 1) -> dense.MethSM
   
   return(dense.MethSM)
   
@@ -152,7 +152,9 @@ fill.empty.columns = function(MethSM, verbose = TRUE){
 #' 
 #' @examples
 #' 
-#' Methylation = qs::qread(system.file("extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"))
+#' Methylation = qs::qread(system.file(
+#'     "extdata", "Methylation_4.qs", package="SingleMoleculeFootprinting"
+#'     ))
 #' MethSM = Methylation[[2]]$SMF_MM_TKO_DE_
 #' RegionOfInterest = GenomicRanges::GRanges("chr6", IRanges::IRanges(88106000, 88106500))
 #' RegionOfInterest = IRanges::resize(RegionOfInterest, 80, "center")
