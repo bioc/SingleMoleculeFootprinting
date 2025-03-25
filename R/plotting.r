@@ -9,6 +9,7 @@
 #' @param SNPs GRanges object of SNPs to visualize. Assumed to be already subset. Assumed to have the reference and alternative sequences respectively under the columns "R" and "A"
 #' @param SortingBins GRanges object of sorting bins (absolute) coordinate to visualize
 #'
+#' @importFrom S4Vectors elementMetadata
 #' @importFrom dplyr as_tibble select filter arrange mutate rowwise
 #' @importFrom tidyr gather
 #' @importFrom rlang .data
@@ -35,9 +36,10 @@
 PlotAvgSMF = function(MethGR, MethSM=NULL, RegionOfInterest, SortedReads=NULL, ShowContext=FALSE, TFBSs=NULL, SNPs=NULL, SortingBins=NULL){
 
   # Prepare SMF data
-  MethGR %>%
+  coverage.columns = grep("_Coverage$", colnames(elementMetadata(MethGR)))
+  MethGR[,-coverage.columns] %>%
     as_tibble() %>%
-    dplyr::select(-grep("_Coverage$", colnames(.data)), -.data$end, -.data$width, -.data$strand) %>%
+    dplyr::select(-.data$end, -.data$width, -.data$strand) %>%
     gather(sample, MethRate, -.data$seqnames, -.data$start, -.data$GenomicContext) %>%
     na.omit() -> PlottingDF
   
