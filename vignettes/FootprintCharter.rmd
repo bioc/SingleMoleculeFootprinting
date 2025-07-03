@@ -119,7 +119,7 @@ This way, the footprints data.frame reports TF motif annotations by populating t
 
 The function *PlotFootprints* allows to visually inspect the footprint detection results.
 
-```{r}
+```{r, fig.width=7, fig.height=7}
 x.axis.breaks = c(
   start(resize(RegionOfInterest, width = 500, fix = "center")), 
   end(resize(RegionOfInterest, width = 500, fix = "center"))
@@ -135,7 +135,7 @@ PlotFootprints(
     breaks = x.axis.breaks, 
     labels = format(x.axis.breaks, nsmall=1, big.mark=",")
     ) +
-  theme(legend.position = "top")
+  theme(legend.position = "top", axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
 The function plots the average SMF signal separately for each partition alongside the biological.state annotation. The dashed line indicates the footprint detection threshold.

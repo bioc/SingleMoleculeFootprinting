@@ -1,6 +1,6 @@
 Package: SingleMoleculeFootprinting
 Title: Analysis tools for Single Molecule Footprinting (SMF) data
-Version: 2.3.0
+Version: 2.3.1
 Authors@R: c(
     person(given = "Guido",
            family = "Barzaghi",
@@ -41,6 +41,7 @@ Imports:
     parallelDist,
     patchwork,
     plyranges,
+    qs,
     QuasR,
     RColorBrewer,
     rlang,

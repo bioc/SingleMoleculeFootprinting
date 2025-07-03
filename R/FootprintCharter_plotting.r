@@ -80,10 +80,10 @@ PlotFootprints = function(MethSM, partitioned.molecules, footprints.df, TFBSs){
     geom_rect(data = footprints.df, mapping = aes(xmin = start-1, xmax = end+1, ymin = 0, ymax = 1, fill=biological.state), alpha=1, inherit.aes = FALSE) +
     geom_line() +
     geom_point() +
-    facet_wrap(partition.nr~.) +
+    facet_wrap(partition.nr~., ncol = 2) +
     geom_hline(yintercept = 0.5, linetype = 2) +
     {if(!is.null(TFBS_PlottingDF)){geom_rect(TFBS_PlottingDF, mapping = aes(xmin=start, xmax=end, ymin=-0.3, ymax=-0.1), alpha=0.5, inherit.aes = FALSE)}} +
-    {if(!is.null(TFBS_PlottingDF)){geom_text(TFBS_PlottingDF, mapping = aes(x=start+((end-start)/2), y=-0.35, label=TF), inherit.aes = FALSE)}} +
+    {if(!is.null(TFBS_PlottingDF)){ggrepel::geom_text_repel(TFBS_PlottingDF, mapping = aes(x=start+((end-start)/2), y=-0.35, label=TF), inherit.aes = FALSE)}} +
     ylim(c(-0.5, 1)) +
     scale_fill_manual(breaks = c("TF", "accessible", "nucleosome", "noise", "unrecognized"), values = c("dodgerblue4", "darkseagreen", "deepskyblue3", "red3", "orange3")) +
     theme_classic()
