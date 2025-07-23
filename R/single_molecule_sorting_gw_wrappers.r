@@ -24,7 +24,7 @@
 #' @importFrom parallel mclapply
 #' @importFrom IRanges findOverlaps
 #' @importFrom S4Vectors queryHits
-#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom Seqinfo seqlengths
 #' 
 #' @return list where [[1]] is the TFBSs GRanges object describing coordinates TFBSs used to sort single molecules
 #'                    [[2]] is a list of SortedReads nested per TFBS_cluster and sample
@@ -63,7 +63,7 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
                                                                max_intercluster_distance = max_interTF_distance,
                                                                max_window_width = max_window_width,
                                                                min_cluster_width = min_cluster_width,
-                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome), 
+                                                               genomic.seqlenghts = Seqinfo::seqlengths(genome), 
                                                                fix.window.size = fix.window.size, 
                                                                max.window.size = max.window.size)
   message(paste0(length(MethylationCallingWindows), " METHYLATION CALLING WINDOWS DESIGNED"))
@@ -161,7 +161,7 @@ SortReadsBySingleTF_MultiSiteWrapper = function(sampleFile, samples, genome, cov
 #' @importFrom parallel mclapply
 #' @importFrom IRanges findOverlaps
 #' @importFrom S4Vectors queryHits
-#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom Seqinfo seqlengths
 #' 
 #' @return list where [[1]] is the TFBS_Clusters object describing coordinates and composition of the TFBS clusters used to sort single molecules
 #'                    [[2]] is a list of SortedReads nested per TFBS_cluster and sample
@@ -208,7 +208,7 @@ SortReadsByTFCluster_MultiSiteWrapper = function(sampleFile, samples, genome, co
                                                                max_intercluster_distance = max_intercluster_distance,
                                                                max_window_width = max_window_width,
                                                                min_cluster_width = min_cluster_width,
-                                                               genomic.seqlenghts = GenomeInfoDb::seqlengths(genome), 
+                                                               genomic.seqlenghts = Seqinfo::seqlengths(genome), 
                                                                fix.window.size = fix.window.size, 
                                                                max.window.size = max.window.size)
   message(paste0(length(MethylationCallingWindows), " METHYLATION CALLING WINDOWS DESIGNED"))

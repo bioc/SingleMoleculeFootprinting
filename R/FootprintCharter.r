@@ -14,7 +14,7 @@
 #' 
 #' @importFrom parallelDist parDist
 #' @importFrom cluster pam silhouette
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom tibble rownames_to_column
 #' @importFrom tidyr gather
 #' @importFrom dplyr right_join select arrange

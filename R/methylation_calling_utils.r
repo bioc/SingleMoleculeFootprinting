@@ -281,7 +281,7 @@ Arrange_TFBSs_clusters = function(
 #' @param max_intercluster_distance maximum distance between two consecutive TFBS clusters for them to be grouped in the same window
 #' @param max_window_width upper limit to window width. This value should be adjusted according to the user's system as it determines the amount of memory used in the later context methylation call
 #' @param min_cluster_width lower limit to window width. Corresponds to the scenario when a window contains a single TFBS cluster.
-#' @param genomic.seqlenghts used to fix the windows spanning over chromosome edges. To be fetched by GenomeInfoDb::seqlengths() or equivalent.
+#' @param genomic.seqlenghts used to fix the windows spanning over chromosome edges. To be fetched by Seqinfo::seqlengths() or equivalent.
 #' @param fix.window.size Defaults to FALSE. When TRUE, overrides arguments max_intercluster_distance and max_window_width and produces windows containing a fixed number of TFBS_clusters.
 #' @param max.window.size Max number of TFBS_clusters per window. Used only when fix.window.size is TRUE. N.b.: window size could be slightly higher than passed value if RegionsOfInterest overlap
 #' 

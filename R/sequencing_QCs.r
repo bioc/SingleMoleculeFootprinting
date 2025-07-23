@@ -7,7 +7,7 @@
 #' @param cores number of cores for parallel processing. Defaults to 1
 #'
 #' @importFrom QuasR qMeth
-#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom Seqinfo seqlengths
 #' @importFrom parallel makeCluster stopCluster
 #' @importFrom BSgenome getSeq
 #' @importFrom IRanges resize
@@ -56,7 +56,7 @@ ConversionRate = function(sampleFile, genome, chr=19, cores=1){
 #' @param clObj cluster object to emply for parallel processing created using the parallel::makeCluster function. Defaults to NULL
 #'
 #' @importFrom QuasR qCount
-#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom Seqinfo seqlengths
 #' @importFrom GenomicRanges tileGenome
 #'
 #' @return bait capture efficiency

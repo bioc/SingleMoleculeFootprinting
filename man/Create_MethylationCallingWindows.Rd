@@ -23,7 +23,7 @@ Create_MethylationCallingWindows(
 
 \item{min_cluster_width}{lower limit to window width. Corresponds to the scenario when a window contains a single TFBS cluster.}
 
-\item{genomic.seqlenghts}{used to fix the windows spanning over chromosome edges. To be fetched by GenomeInfoDb::seqlengths() or equivalent.}
+\item{genomic.seqlenghts}{used to fix the windows spanning over chromosome edges. To be fetched by Seqinfo::seqlengths() or equivalent.}
 
 \item{fix.window.size}{Defaults to FALSE. When TRUE, overrides arguments max_intercluster_distance and max_window_width and produces windows containing a fixed number of TFBS_clusters.}
 
