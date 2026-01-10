@@ -117,8 +117,7 @@ DetectFootprints = function(
 #' @param chromosome chromosome of current Region of interest.
 #' @param TFBSs TF motif annotations. GRanges with at least two metadata columns: TF and absolute.idx for TF identity and motif index, respectively
 #' 
-#' @importFrom dplyr arrange mutate
-#' @importFrom plyranges filter
+#' @importFrom dplyr arrange mutate filter
 #' @importFrom GenomicRanges GRanges findOverlaps
 #'
 AnnotateFootprints = function(footprints.df, chromosome, TFBSs){
@@ -128,8 +127,8 @@ AnnotateFootprints = function(footprints.df, chromosome, TFBSs){
     dplyr::mutate(seqnames = chromosome, TF = NA, TF.name = NA) %>%
     GRanges() -> footprints.gr
   
-  TF.footprints = plyranges::filter(footprints.gr, biological.state == "TF")
-  non.TF.footprints = plyranges::filter(footprints.gr, biological.state != "TF")
+  TF.footprints = dplyr::filter(footprints.gr, biological.state == "TF")
+  non.TF.footprints = dplyr::filter(footprints.gr, biological.state != "TF")
 
   # N.b.: by resizing to 1, we require that at least half the TFBSs falls into the footprint
   Overlaps = findOverlaps(TF.footprints, IRanges::resize(TFBSs, 1, "center"))
