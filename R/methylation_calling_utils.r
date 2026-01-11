@@ -287,7 +287,8 @@ Arrange_TFBSs_clusters = function(
 #' 
 #' @importFrom IRanges resize start end width reduce
 #' @importFrom GenomicRanges findOverlaps seqnames GRanges
-#' @importFrom plyranges reduce_ranges mutate group_by summarise select
+#' @importFrom plyranges reduce_ranges 
+#' @importFrom dplyr mutate group_by summarise select
 #' @importFrom rlang .data
 #' @importFrom S4Vectors subjectHits
 #' 
@@ -344,14 +345,14 @@ Create_MethylationCallingWindows = function(
     RegionsOfInterest %>%
       IRanges::reduce(ignore.strand = TRUE) %>%
       sort() %>%
-      plyranges::mutate(idx = rep(seq(ceiling(length(.)/max.window.size)), each = max.window.size)[seq_along(.)]) %>%
-      plyranges::group_by(seqnames, idx) %>%
-      plyranges::summarise(start = min(start)-1, end = max(end)+1) %>% # padding for strand collapsing 
+      mutate(idx = rep(seq(ceiling(length(.)/max.window.size)), each = max.window.size)[seq_along(.)]) %>%
+      group_by(seqnames, idx) %>%
+      summarise(start = min(start)-1, end = max(end)+1) %>% # padding for strand collapsing 
       #       N.b. when working with overlapping GenomicTiles, 
       #            the resulting windows will be precise from the start of the first tile to the end of the last, 
       #            but will inherit the same overlap as the GenomicTiles
       GRanges() %>%
-      plyranges::select(-idx) -> SearchingWindows
+      select(-idx) -> SearchingWindows
     
   }
   
