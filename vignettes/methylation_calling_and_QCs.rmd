@@ -546,7 +546,7 @@ PlotAvgSMF(
 ```{r, echo=FALSE, eval=FALSE}
 sampleFile = "/g/krebs/barzaghi/HTS/SMF/MM/QuasR_input_files/QuasR_input_AllCanWGpooled_dprm_DE_only.txt"
 samples = suppressMessages(unique(readr::read_delim(sampleFile, "\t")$SampleName))
-plyranges::filter(TFBSs, TF=="REST" & isBound) -> REST_motifs
+filter(TFBSs, TF=="REST" & isBound) -> REST_motifs
 
 clObj = parallel::makeCluster(16)
 motif.counts = QuasR::qCount(GetQuasRprj(ChIP_data_dictionary[["Rest"]], genome = BSgenome.Mmusculus.UCSC.mm10), query = IRanges::resize(REST_motifs, 200, "center"), clObj = clObj)
