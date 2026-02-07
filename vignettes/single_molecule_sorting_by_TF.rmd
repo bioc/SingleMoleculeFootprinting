@@ -45,7 +45,7 @@ Methylation = CallContextMethylation(
 )
 qs::qsave(Methylation, "../inst/extdata/Methylation_3.qs")
 
-TFBSs = plyranges::filter(plyranges::filter_by_overlaps(TFBSs_full_list, RegionOfInterest), TF == "CTCF")
+TFBSs = filter(plyranges::filter_by_overlaps(TFBSs_full_list, RegionOfInterest), TF == "CTCF")
 elementMetadata(TFBSs) = NULL
 TFBSs$TF = "CTCF"
 qs::qsave(TFBSs, "../inst/extdata/TFBSs_3.qs")
@@ -216,7 +216,7 @@ StateQuantificationPlot(SortedReads = SortedReads, states = TFPairStates())
 
 ```{r, eval=FALSE, echo=FALSE}
 TFBSs_full_list %>%
-  plyranges::filter(seqnames == "chr19", TF == "KLF4", isBound) %>%
+  filter(seqnames == "chr19", TF == "KLF4", isBound) %>%
   head(500) -> KLF4s
 elementMetadata(KLF4s) = NULL
 KLF4s$TF = "KLF4"
