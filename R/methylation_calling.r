@@ -262,7 +262,7 @@ FilterContextCytosines = function(MethGR, genome, context){
 #' Methylation = qs::qread(system.file(
 #'     "extdata", "Methylation_3.qs", package="SingleMoleculeFootprinting"
 #'     ))
-#' MethGR = filter(Methylation[[1]], GenomicContext == "GCH")
+#' MethGR = Methylation[[1]][Methylation[[1]]$GenomicContext == "GCH"]
 #' CollapseStrands(MethGR = MethGR, context = "GC")
 #'
 CollapseStrands = function(MethGR, context){
